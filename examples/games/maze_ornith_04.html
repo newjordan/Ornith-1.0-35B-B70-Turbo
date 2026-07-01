@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Robot-Filled Maze Shooter</title>
+<style>
+    body {
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        font-family: monospace;
+    }
+    canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    }
+</style>
+</head>
+<body>
+<canvas id="game" width="480" height="640"></canvas>
+<script>
+// ============================================================
+// ROBOT-FILLED MAZE SHOOTER
+// ============================================================
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// --- CONSTANTS ---
+const TILE_SIZE = 32;
+const COLS = 15;
+const ROWS = 20;
+const WIDTH = COLS * TILE_SIZE;
+const HEIGHT = ROWS * TILE_SIZE;
+const HUD_HEIGHT = 40;
+const TOTAL_HEIGHT = HEIGHT + HUD_HEIGHT;
+
+// Palette
+const COLORS = {
+    bg: '#050505',
+    wall: '#00ff00',
+    wallDark: '#004400',
+    player: '#ffffff',
+    playerEye: '#000000',
+    bullet: '#ffff00',
+    enemy: '#ff0000',
+    enemyEye: '#ffffff',
+    door: '#00ffff',
+    doorOpen: '#00ff00',
+    text: '#ffffff',
+    hud: '#00ff00',
+    scanline: 'rgba(0,0,0,0.1)'
+};
+
+// Game States
+const STATE_START = 'start';
+const STATE_PLAY = 'play';
+const STATE_OVER = 'over';
+const STATE_WIN = 'win';
+
+let gameState = STATE_START;
+let score = 0;
+let lives = 3;
+let level = 1;
+let lastTime = 0;
+let keys = new Set();
+
+// --- AUDIO SYSTEM ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    switch(type) {
+        case 'shoot':
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+            break;
+        case 'hit':
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+            break;
+        case 'die':
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+            break;
+        case 'win':
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+            break;
+    }
+}
+
+// --- GAME STATE ---
+let player = { x: 0, y: 0, vx: 0, vy: 0, size: 20, speed: 3, cooldown: 0 };
+let bullets = [];
+let enemies = [];
+let particles = [];
+let map = [];
+let door = { x: 0, y: 0, open: false };
+let shootCooldown = 0;
+
+// --- MAP GENERATION ---
+function generateMap() {
+    map = [];
+    for (let y = 0; y < ROWS; y++) {
+        map[y] = [];
+        for (let x = 0; x < COLS; x++) {
+            // Border walls
+            if (y === 0 || y === ROWS - 1 || x === 0 || x === COLS - 1) {
+                map[y][x] = 1;
+            } else {
+                // Random internal walls
+                map[y][x] = Math.random() < 0.15 ? 1 : 0;
+            }
+        }
+    }
+    // Clear spawn area
+    map[1][1] = 0; map[1][2] = 0; map[2][1] = 0; map[2][2] = 0;
+    // Clear door area
+    map[ROWS-2][COLS-2] = 0; map[ROWS-2][COLS-3] = 0;
+    map[ROWS-3][COLS-2] = 0; map[ROWS-3][COLS-3] = 0;
+    
+    door = { x: COLS - 2, y: ROWS - 2, open: false };
+}
+
+// --- ENTITY SPAWNING ---
+function spawnEnemies() {
+    enemies = [];
+    const count = 3 + level;
+    for (let i = 0; i < count; i++) {
+        let x, y;
+        do {
+            x = Math.floor(Math.random() * (COLS - 4)) + 2;
+            y = Math.floor(Math.random() * (ROWS - 4)) + 2;
+        } while (map[y][x] === 1 || (x < 4 && y < 4));
+        
+        enemies.push({
+            x: x * TILE_SIZE + TILE_SIZE/2,
+            y: y * TILE_SIZE + TILE_SIZE/2,
+            vx: 0,
+            vy: 0,
+            size: 18,
+            speed: 1 + level * 0.3,
+            cooldown: Math.random() * 100,
+            dir: Math.floor(Math.random() * 4)
+        });
+    }
+}
+
+// --- COLLISION ---
+function checkCollision(x, y, size) {
+    const half = size / 2;
+    const left = Math.floor((x - half) / TILE_SIZE);
+    const right = Math.floor((x + half - 1) / TILE_SIZE);
+    const top = Math.floor((y - half) / TILE_SIZE);
+    const bottom = Math.floor((y + half - 1) / TILE_SIZE);
+    
+    for (let ty = top; ty <= bottom; ty++) {
+        for (let tx = left; tx <= right; tx++) {
+            if (ty >= 0 && ty < ROWS && tx >= 0 && tx < COLS && map[ty][tx] === 1) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// --- PARTICLES ---
+function spawnParticles(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4,
+            life: 30 + Math.random() * 30,
+            color: color,
+            size: 2 + Math.random() * 3
+        });
+    }
+}
+
+// --- UPDATE ---
+function update(dt) {
+    if (gameState !== STATE_PLAY) return;
+    
+    // Player movement
+    let dx = 0, dy = 0;
+    if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) dx -= 1;
+    if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) dx += 1;
+    if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) dy -= 1;
+    if (keys.has('ArrowDown') || keys.has('s') || keys.has('S')) dy += 1;
+    
+    // Normalize diagonal movement
+    if (dx !== 0 && dy !== 0) {
+        dx *= 0.707;
+        dy *= 0.707;
+    }
+    
+    const newX = player.x + dx * player.speed;
+    const newY = player.y + dy * player.speed;
+    
+    if (!checkCollision(newX, player.y, player.size)) player.x = newX;
+    if (!checkCollision(player.x, newY, player.size)) player.y = newY;
+    
+    // Shooting
+    if (keys.has(' ') && shootCooldown <= 0) {
+        const angle = Math.atan2(dy, dx);
+        bullets.push({
+            x: player.x,
+            y: player.y,
+            vx: Math.cos(angle) * 6,
+            vy: Math.sin(angle) * 6,
+            life: 60
+        });
+        shootCooldown = 15;
+        playSound('shoot');
+    }
+    if (shootCooldown > 0) shootCooldown--;
+    
+    // Update bullets
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        b.life--;
+        
+        if (b.life <= 0 || checkCollision(b.x, b.y, 4)) {
+            spawnParticles(b.x, b.y, COLORS.bullet, 5);
+            bullets.splice(i, 1);
+            continue;
+        }
+        
+        // Check enemy hits
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            const e = enemies[j];
+            const dist = Math.hypot(b.x - e.x, b.y - e.y);
+            if (dist < e.size) {
+                spawnParticles(e.x, e.y, COLORS.enemy, 10);
+                enemies.splice(j, 1);
+                bullets.splice(i, 1);
+                score += 100;
+                playSound('hit');
+                break;
+            }
+        }
+    }
+    
+    // Update enemies
+    enemies.forEach(e => {
+        e.cooldown--;
+        // Simple AI: move toward player with random changes
+        if (e.cooldown <= 0) {
+            const dx = player.x - e.x;
+            const dy = player.y - e.y;
+            const dist = Math.hypot(dx, dy);
+            
+            if (dist > 0) {
+                e.vx = (dx / dist) * e.speed;
+                e.vy = (dy / dist) * e.speed;
+            }
+            e.cooldown = 60 + Math.random() * 60;
+        }
+        
+        const newEX = e.x + e.vx;
+        const newEY = e.y + e.vy;
+        
+        if (!checkCollision(newEX, e.y, e.size)) e.x = newEX;
+        if (!checkCollision(e.x, newEY, e.size)) e.y = newEY;
+        
+        // Check collision with player
+        const dist = Math.hypot(player.x - e.x, player.y - e.y);
+        if (dist < player.size/2 + e.size/2) {
+            lives--;
+            playSound('die');
+            spawnParticles(player.x, player.y, COLORS.player, 20);
+            player.x = TILE_SIZE * 1.5;
+            player.y = TILE_SIZE * 1.5;
+            enemies = [];
+            spawnEnemies();
+            if (lives <= 0) {
+                gameState = STATE_OVER;
+            }
+        }
+    });
+    
+    // Check win condition
+    const doorTile = map[door.y][door.x];
+    if (doorTile === 0 && enemies.length === 0 && !door.open) {
+        door.open = true;
+        playSound('win');
+        level++;
+        setTimeout(() => {
+            generateMap();
+            spawnEnemies();
+            player.x = TILE_SIZE * 1.5;
+            player.y = TILE_SIZE * 1.5;
+        }, 1000);
+    }
+    
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        p.size *= 0.95;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+}
+
+// --- DRAW ---
+function draw() {
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    if (gameState === STATE_START) {
+        drawStartScreen();
+        return;
+    }
+    
+    if (gameState === STATE_OVER) {
+        drawGame();
+        drawGameOver();
+        return;
+    }
+    
+    drawGame();
+}
+
+function drawStartScreen() {
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '24px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('ROBOT-FILLED', canvas.width/2, 200);
+    ctx.fillText('MAZE SHOOTER', canvas.width/2, 240);
+    
+    ctx.font = '16px monospace';
+    ctx.fillStyle = COLORS.hud;
+    ctx.fillText('PRESS SPACE TO START', canvas.width/2, 320);
+    
+    ctx.font = '12px monospace';
+    ctx.fillStyle = '#888';
+    ctx.fillText('WASD/Arrows: Move', canvas.width/2, 400);
+    ctx.fillText('Space: Shoot', canvas.width/2, 420);
+    ctx.fillText('Kill all robots to open door', canvas.width/2, 460);
+    
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#666';
+    ctx.fillText('Robot-Filled Maze Shooter', canvas.width/2, 520);
+    ctx.fillText('original-genre homage, no copyrighted IP', canvas.width/2, 540);
+}
+
+function drawGame() {
+    // Draw map
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            if (map[y][x] === 1) {
+                ctx.fillStyle = COLORS.wall;
+                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE + HUD_HEIGHT, TILE_SIZE, TILE_SIZE);
+                ctx.fillStyle = COLORS.wallDark;
+                ctx.fillRect(x * TILE_SIZE + 2, y * TILE_SIZE + 2 + HUD_HEIGHT, TILE_SIZE - 4, TILE_SIZE - 4);
+            }
+        }
+    }
+    
+    // Draw door
+    const doorX = door.x * TILE_SIZE;
+    const doorY = door.y * TILE_SIZE + HUD_HEIGHT;
+    ctx.fillStyle = door.open ? COLORS.doorOpen : COLORS.door;
+    ctx.fillRect(doorX + 4, doorY + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+    if (!door.open) {
+        ctx.fillStyle = '#000';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('LOCKED', doorX + TILE_SIZE/2, doorY + TILE_SIZE/2 + 4);
+    }
+    
+    // Draw player
+    ctx.fillStyle = COLORS.player;
+    ctx.fillRect(player.x - player.size/2, player.y - player.size/2 + HUD_HEIGHT, player.size, player.size);
+    ctx.fillStyle = COLORS.playerEye;
+    ctx.fillRect(player.x - 4, player.y - 4 + HUD_HEIGHT, 8, 8);
+    
+    // Draw enemies
+    enemies.forEach(e => {
+        ctx.fillStyle = COLORS.enemy;
+        ctx.fillRect(e.x - e.size/2, e.y - e.size/2 + HUD_HEIGHT, e.size, e.size);
+        ctx.fillStyle = COLORS.enemyEye;
+        ctx.fillRect(e.x - 3, e.y - 3 + HUD_HEIGHT, 6, 6);
+    });
+    
+    // Draw bullets
+    ctx.fillStyle = COLORS.bullet;
+    bullets.forEach(b => {
+        ctx.fillRect(b.x - 2, b.y - 2 + HUD_HEIGHT, 4, 4);
+    });
+    
+    // Draw particles
+    particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 60;
+        ctx.fillRect(p.x - p.size/2, p.y - p.size/2 + HUD_HEIGHT, p.size, p.size);
+        ctx.globalAlpha = 1;
+    });
+    
+    // Draw HUD
+    drawHUD();
+    
+    // CRT scanline effect
+    ctx.fillStyle = COLORS.scanline;
+    for (let y = 0; y < canvas.height; y += 2) {
+        ctx.fillRect(0, y, canvas.width, 1);
+    }
+}
+
+function drawHUD() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, HUD_HEIGHT);
+    
+    ctx.fillStyle = COLORS.hud;
+    ctx.font = '14px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`SCORE: ${score}`, 10, 25);
+    
+    ctx.textAlign = 'center';
+    ctx.fillText(`LEVEL: ${level}`, canvas.width/2, 25);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText(`LIVES: ${lives}`, canvas.width - 10, 25);
+}
+
+function drawGameOver() {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#ff0000';
+    ctx.font = '32px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 40);
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = '18px monospace';
+    ctx.fillText(`Final Score: ${score}`, canvas.width/2, canvas.height/2);
+    
+    ctx.font = '14px monospace';
+    ctx.fillStyle = '#888';
+    ctx.fillText('Press R to Restart', canvas.width/2, canvas.height/2 + 40);
+}
+
+// --- INPUT ---
+document.addEventListener('keydown', (e) => {
+    keys.add(e.key);
+    
+    if (e.key === ' ' && gameState === STATE_START) {
+        gameState = STATE_PLAY;
+        resetGame();
+    }
+    
+    if (e.key === 'r' || e.key === 'R') {
+        if (gameState === STATE_OVER) {
+            gameState = STATE_PLAY;
+            resetGame();
+        }
+    }
+    
+    e.preventDefault();
+});
+
+document.addEventListener('keyup', (e) => {
+    keys.delete(e.key);
+});
+
+// --- GAME RESET ---
+function resetGame() {
+    score = 0;
+    lives = 3;
+    level = 1;
+    player.x = TILE_SIZE * 1.5;
+    player.y = TILE_SIZE * 1.5;
+    bullets = [];
+    particles = [];
+    generateMap();
+    spawnEnemies();
+}
+
+// --- GAME LOOP ---
+function loop(timestamp) {
+    const dt = (timestamp - lastTime) / 16.67; // Normalize to 60fps
+    lastTime = timestamp;
+    
+    update(dt);
+    draw();
+    
+    requestAnimationFrame(loop);
+}
+
+// Start
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>

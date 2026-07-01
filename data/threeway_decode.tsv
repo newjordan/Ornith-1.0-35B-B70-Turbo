@@ -1,0 +1,14 @@
+# Ornith-1.0-35B — decode t/s vs context depth, 3-way honest decomposition (B70, Q5_K_M, f16 KV)
+# upstream = mainline llama.cpp, default flags (DNN on, -b 2048 -ub 512)
+# upflags  = mainline + Turbo flags (GGML_SYCL_DISABLE_DNN=1, -b 8192 -ub 4096)
+# turbo    = fork (+3 fusion commits) + Turbo flags — the one fork-only win
+# config = upflags/upstream · code = turbo/upflags · whole = turbo/upstream
+# source: qworld_turbo/results/THREEWAY_F16_B70.md
+depth	upstream	upflags	turbo	config	code	whole
+805	81.7	81.8	93.5	1.00×	1.14×	1.14×
+3313	80.0	79.8	91.2	1.00×	1.14×	1.14×
+6963	77.5	77.4	88.2	1.00×	1.14×	1.14×
+14563	72.9	72.7	82.3	1.00×	1.13×	1.13×
+29713	66.5	66.1	74.1	0.99×	1.12×	1.11×
+61341	55.7	55.5	61.1	1.00×	1.10×	1.10×
+129325	41.4	41.3	44.2	1.00×	1.07×	1.07×

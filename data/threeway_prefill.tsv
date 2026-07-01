@@ -1,0 +1,14 @@
+# Ornith-1.0-35B — prefill t/s vs prompt tokens, 3-way honest decomposition (B70, Q5_K_M, f16 KV)
+# upstream = mainline llama.cpp, default flags (DNN on, -b 2048 -ub 512)
+# upflags  = mainline + Turbo flags (GGML_SYCL_DISABLE_DNN=1, -b 8192 -ub 4096)
+# turbo    = fork (+3 fusion commits) + Turbo flags
+# config = upflags/upstream · code = turbo/upflags · whole = turbo/upstream
+# source: qworld_turbo/results/THREEWAY_F16_B70.md
+prompt	upstream	upflags	turbo	config	code	whole
+805	1075	1378	1386	1.28×	1.01×	1.29×
+3313	1074	1840	1846	1.71×	1.00×	1.72×
+6963	1031	1741	1734	1.69×	1.00×	1.68×
+14563	959	1538	1531	1.60×	1.00×	1.60×
+29713	825	1208	1205	1.46×	1.00×	1.46×
+61341	628	828	826	1.32×	1.00×	1.32×
+129325	413	489	488	1.18×	1.00×	1.18×

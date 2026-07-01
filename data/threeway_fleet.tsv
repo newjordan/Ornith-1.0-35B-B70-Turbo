@@ -1,0 +1,17 @@
+# Ornith-1.0-35B — fleet aggregate decode t/s vs agents, 3-way honest decomposition (2048+256 synthetic, f16 KV)
+# upstream = mainline llama.cpp, default flags (DNN on, -b 2048 -ub 512)
+# upflags  = mainline + Turbo flags (GGML_SYCL_DISABLE_DNN=1, -b 8192 -ub 4096)
+# turbo    = fork (+3 fusion commits) + Turbo flags — code win goes <1x at >=40 agents
+# config = upflags/upstream · code = turbo/upflags · whole = turbo/upstream
+# source: qworld_turbo/results/THREEWAY_F16_B70.md
+agents	upstream	upflags	turbo	config	code	whole
+1	78.5	78.9	86.2	1.01×	1.09×	1.10×
+2	71.8	70.8	70.6	0.99×	1.00×	0.98×
+4	85.7	118.8	120.8	1.39×	1.02×	1.41×
+8	91.4	132.8	132.8	1.45×	1.00×	1.45×
+16	98.1	132.3	132.5	1.35×	1.00×	1.35×
+24	103.2	143.8	139.0	1.39×	0.97×	1.35×
+32	112.0	149.1	149.1	1.33×	1.00×	1.33×
+40	115.6	154.0	148.0	1.33×	0.96×	1.28×
+48	122.9	160.8	157.0	1.31×	0.98×	1.28×
+56	126.6	161.8	160.2	1.28×	0.99×	1.27×

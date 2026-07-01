@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Robot-Filled Maze Shooter</title>
+<style>
+  body {
+    background: #000;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+  }
+  canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border: 2px solid #333;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  }
+</style>
+</head>
+<body>
+<canvas id="game" width="480" height="640"></canvas>
+<script>
+// ============================================================
+// ROBOT-FILLED MAZE SHOOTER
+// A faithful homage to classic arcade maze shooters
+// ============================================================
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// --- CONSTANTS ---
+const TILE_SIZE = 32;
+const COLS = 15;
+const ROWS = 20;
+const GAME_WIDTH = COLS * TILE_SIZE;
+const GAME_HEIGHT = ROWS * TILE_SIZE;
+const PLAYER_SPEED = 3;
+const BULLET_SPEED = 8;
+const ENEMY_SPEED = 1.2;
+const MAX_LIVES = 3;
+const MAX_BULLETS = 2;
+const COLORS = {
+  bg: '#0a0a0a',
+  wall: '#00ff00',
+  wallShadow: '#003300',
+  player: '#00ffff',
+  playerEye: '#ff00ff',
+  enemy: '#ff0000',
+  enemyEye: '#ffff00',
+  bullet: '#ffff00',
+  door: '#00ff00',
+  hud: '#00ff00',
+  text: '#ffffff'
+};
+
+// --- GAME STATE ---
+let gameState = 'start'; // 'start', 'play', 'gameover', 'win'
+let score = 0;
+let lives = MAX_LIVES;
+let level = 1;
+let frameCount = 0;
+let showControls = true;
+let controlsTimer = 0;
+
+// --- INPUT ---
+const keys = new Set();
+window.addEventListener('keydown', e => {
+  keys.add(e.code);
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+    e.preventDefault();
+  }
+});
+window.addEventListener('keyup', e => keys.delete(e.code));
+
+// --- AUDIO ---
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function playSound(type) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  switch(type) {
+    case 'shoot':
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.1);
+      break;
+    case 'hit':
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+      break;
+    case 'die':
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.5);
+      gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.5);
+      break;
+    case 'win':
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(1000, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+      break;
+  }
+}
+
+// --- MAZE DATA ---
+// 1 = wall, 0 = empty, 2 = player start, 3 = enemy spawn, 4 = door
+const MAZES = [
+  [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,2,0,0,1,0,0,0,0,0,1,0,0,0,1],
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,0,0,1,0,0,0,0,0,1,0,1],
+    [1,0,1,1,1,1,1,0,1,1,1,0,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,1,0,0,0,1,0,0,0,1,0,1],
+    [1,0,0,0,1,0,1,0,1,0,1,0,0,0,1],
+    [1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,1,0,0,0,1,0,0,0,1,0,1],
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+    [1,3,0,0,1,0,0,0,0,0,1,0,0,4,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+  ]
+];
+
+let maze = [];
+let player = { x: 0, y: 0, vx: 0, vy: 0, size: 20, cooldown: 0 };
+let bullets = [];
+let enemies = [];
+let particles = [];
+let doorPos = { x: 0, y: 0 };
+
+function initLevel() {
+  maze = MAZES[0].map(row => [...row]);
+  enemies = [];
+  bullets = [];
+  particles = [];
+  
+  // Find spawn points
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (maze[y][x] === 2) {
+        player.x = x * TILE_SIZE + TILE_SIZE / 2;
+        player.y = y * TILE_SIZE + TILE_SIZE / 2;
+        maze[y][x] = 0;
+      }
+      if (maze[y][x] === 3) {
+        enemies.push({
+          x: x * TILE_SIZE + TILE_SIZE / 2,
+          y: y * TILE_SIZE + TILE_SIZE / 2,
+          vx: ENEMY_SPEED,
+          vy: 0,
+          size: 18,
+          dir: Math.floor(Math.random() * 4)
+        });
+        maze[y][x] = 0;
+      }
+      if (maze[y][x] === 4) {
+        doorPos = { x: x * TILE_SIZE, y: y * TILE_SIZE };
+        maze[y][x] = 0;
+      }
+    }
+  }
+}
+
+// --- COLLISION ---
+function isWall(x, y, size) {
+  const half = size / 2;
+  const points = [
+    [x - half, y - half],
+    [x + half, y - half],
+    [x - half, y + half],
+    [x + half, y + half]
+  ];
+  
+  for (const [px, py] of points) {
+    const col = Math.floor(px / TILE_SIZE);
+    const row = Math.floor(py / TILE_SIZE);
+    if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return true;
+    if (maze[row][col] === 1) return true;
+  }
+  return false;
+}
+
+function canMove(x, y, size) {
+  return !isWall(x, y, size);
+}
+
+// --- PARTICLES ---
+function createParticles(x, y, color, count = 8) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 4,
+      vy: (Math.random() - 0.5) * 4,
+      life: 30,
+      color,
+      size: 3 + Math.random() * 3
+    });
+  }
+}
+
+// --- UPDATE ---
+function update() {
+  if (gameState !== 'play') return;
+  
+  frameCount++;
+  
+  // Player movement
+  let dx = 0, dy = 0;
+  if (keys.has('ArrowLeft') || keys.has('KeyA')) dx = -PLAYER_SPEED;
+  if (keys.has('ArrowRight') || keys.has('KeyD')) dx = PLAYER_SPEED;
+  if (keys.has('ArrowUp') || keys.has('KeyW')) dy = -PLAYER_SPEED;
+  if (keys.has('ArrowDown') || keys.has('KeyS')) dy = PLAYER_SPEED;
+  
+  // Normalize diagonal movement
+  if (dx !== 0 && dy !== 0) {
+    dx *= 0.707;
+    dy *= 0.707;
+  }
+  
+  // Move with collision
+  if (canMove(player.x + dx, player.y, player.size)) {
+    player.x += dx;
+  }
+  if (canMove(player.x, player.y + dy, player.size)) {
+    player.y += dy;
+  }
+  
+  // Shooting
+  if (player.cooldown > 0) player.cooldown--;
+  if (keys.has('Space') && bullets.length < MAX_BULLETS && player.cooldown === 0) {
+    bullets.push({
+      x: player.x,
+      y: player.y,
+      vx: 0,
+      vy: -BULLET_SPEED,
+      size: 6
+    });
+    player.cooldown = 15;
+    playSound('shoot');
+  }
+  
+  // Update bullets
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.x += b.vx;
+    b.y += b.vy;
+    
+    // Wall collision
+    if (isWall(b.x, b.y, b.size)) {
+      createParticles(b.x, b.y, COLORS.bullet, 4);
+      bullets.splice(i, 1);
+      continue;
+    }
+    
+    // Enemy collision
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const e = enemies[j];
+      const dist = Math.hypot(b.x - e.x, b.y - e.y);
+      if (dist < e.size + b.size) {
+        createParticles(e.x, e.y, COLORS.enemy, 12);
+        enemies.splice(j, 1);
+        bullets.splice(i, 1);
+        score += 100;
+        playSound('hit');
+        break;
+      }
+    }
+  }
+  
+  // Update enemies
+  for (const e of enemies) {
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    const [ndx, ndy] = dirs[e.dir];
+    
+    const newX = e.x + e.vx * ndx;
+    const newY = e.y + e.vy * ndy;
+    
+    if (canMove(newX, newY, e.size)) {
+      e.x = newX;
+      e.y = newY;
+    } else {
+      e.dir = Math.floor(Math.random() * 4);
+    }
+    
+    // Collision with player
+    const dist = Math.hypot(player.x - e.x, player.y - e.y);
+    if (dist < (player.size + e.size) / 2) {
+      lives--;
+      playSound('die');
+      createParticles(player.x, player.y, COLORS.player, 15);
+      if (lives <= 0) {
+        gameState = 'gameover';
+      } else {
+        // Reset player position
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            if (MAZES[0][y][x] === 2) {
+              player.x = x * TILE_SIZE + TILE_SIZE / 2;
+              player.y = y * TILE_SIZE + TILE_SIZE / 2;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Update particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+    p.vx *= 0.95;
+    p.vy *= 0.95;
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+    }
+  }
+  
+  // Check door
+  const distToDoor = Math.hypot(player.x - (doorPos.x + TILE_SIZE/2), 
+                                  player.y - (doorPos.y + TILE_SIZE/2));
+  if (distToDoor < TILE_SIZE / 2) {
+    score += 500;
+    level++;
+    playSound('win');
+    initLevel();
+    // Reset player position for new level
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        if (MAZES[0][y][x] === 2) {
+          player.x = x * TILE_SIZE + TILE_SIZE / 2;
+          player.y = y * TILE_SIZE + TILE_SIZE / 2;
+        }
+      }
+    }
+  }
+  
+  // Show controls overlay briefly
+  if (showControls) {
+    controlsTimer++;
+    if (controlsTimer > 180) {
+      showControls = false;
+    }
+  }
+}
+
+// --- DRAW ---
+function draw() {
+  // Clear
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  if (gameState === 'start') {
+    drawStartScreen();
+    return;
+  }
+  
+  if (gameState === 'gameover') {
+    drawGameOver();
+    return;
+  }
+  
+  // Draw maze
+  drawMaze();
+  
+  // Draw door
+  ctx.fillStyle = COLORS.door;
+  ctx.fillRect(doorPos.x + 4, doorPos.y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(doorPos.x + 8, doorPos.y + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+  
+  // Draw player
+  drawPlayer();
+  
+  // Draw enemies
+  for (const e of enemies) {
+    drawEnemy(e);
+  }
+  
+  // Draw bullets
+  for (const b of bullets) {
+    ctx.fillStyle = COLORS.bullet;
+    ctx.fillRect(b.x - b.size/2, b.y - b.size/2, b.size, b.size);
+  }
+  
+  // Draw particles
+  for (const p of particles) {
+    ctx.globalAlpha = p.life / 30;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+  }
+  ctx.globalAlpha = 1;
+  
+  // Draw HUD
+  drawHUD();
+  
+  // Draw controls overlay
+  if (showControls) {
+    drawControls();
+  }
+  
+  // CRT scanline effect
+  drawScanlines();
+}
+
+function drawStartScreen() {
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Title
+  ctx.fillStyle = COLORS.hud;
+  ctx.font = 'bold 32px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('ROBOT-FILLED', canvas.width/2, 200);
+  ctx.fillText('MAZE SHOOTER', canvas.width/2, 240);
+  
+  // Subtitle
+  ctx.fillStyle = COLORS.text;
+  ctx.font = '14px Courier New';
+  ctx.fillText('PRESS SPACE TO START', canvas.width/2, 320);
+  
+  // Credits
+  ctx.fillStyle = '#888';
+  ctx.font = '12px Courier New';
+  ctx.fillText('Robot-Filled Maze Shooter', canvas.width/2, 450);
+  ctx.fillText('— original-genre homage, no copyrighted IP —', canvas.width/2, 470);
+  
+  // Decorative robots
+  drawPlayerAt(canvas.width/2 - 100, 380);
+  drawPlayerAt(canvas.width/2 + 100, 380);
+  
+  ctx.textAlign = 'left';
+}
+
+function drawPlayerAt(x, y) {
+  ctx.fillStyle = COLORS.player;
+  ctx.fillRect(x - 10, y - 10, 20, 20);
+  ctx.fillStyle = COLORS.playerEye;
+  ctx.fillRect(x - 6, y - 6, 4, 4);
+  ctx.fillRect(x + 2, y - 6, 4, 4);
+}
+
+function drawGameOver() {
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  ctx.fillStyle = '#ff0000';
+  ctx.font = 'bold 48px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 50);
+  
+  ctx.fillStyle = COLORS.text;
+  ctx.font = '20px Courier New';
+  ctx.fillText('FINAL SCORE: ' + score, canvas.width/2, canvas.height/2 + 20);
+  ctx.fillText('LEVEL: ' + level, canvas.width/2, canvas.height/2 + 50);
+  
+  ctx.fillStyle = COLORS.hud;
+  ctx.font = '16px Courier New';
+  ctx.fillText('PRESS R TO RESTART', canvas.width/2, canvas.height/2 + 100);
+  
+  ctx.textAlign = 'left';
+}
+
+function drawMaze() {
+  ctx.fillStyle = COLORS.wall;
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (maze[y][x] === 1) {
+        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        // Add shadow for depth
+        ctx.fillStyle = COLORS.wallShadow;
+        ctx.fillRect(x * TILE_SIZE + 2, y * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        ctx.fillStyle = COLORS.wall;
+      }
+    }
+  }
+}
+
+function drawPlayer() {
+  ctx.fillStyle = COLORS.player;
+  ctx.fillRect(player.x - player.size/2, player.y - player.size/2, player.size, player.size);
+  ctx.fillStyle = COLORS.playerEye;
+  ctx.fillRect(player.x - 5, player.y - 5, 3, 3);
+  ctx.fillRect(player.x + 2, player.y - 5, 3, 3);
+}
+
+function drawEnemy(e) {
+  ctx.fillStyle = COLORS.enemy;
+  ctx.fillRect(e.x - e.size/2, e.y - e.size/2, e.size, e.size);
+  ctx.fillStyle = COLORS.enemyEye;
+  ctx.fillRect(e.x - 4, e.y - 4, 3, 3);
+  ctx.fillRect(e.x + 1, e.y - 4, 3, 3);
+}
+
+function drawHUD() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, 40);
+  ctx.fillStyle = COLORS.hud;
+  ctx.font = '16px Courier New';
+  ctx.fillText('SCORE: ' + score, 10, 28);
+  ctx.fillText('LIVES: ' + lives, 200, 28);
+  ctx.fillText('LEVEL: ' + level, 350, 28);
+}
+
+function drawControls() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+  ctx.fillRect(canvas.width/2 - 150, canvas.height - 120, 300, 100);
+  ctx.strokeStyle = COLORS.hud;
+  ctx.strokeRect(canvas.width/2 - 150, canvas.height - 120, 300, 100);
+  
+  ctx.fillStyle = COLORS.text;
+  ctx.font = '14px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('ARROW KEYS / WASD: Move', canvas.width/2, canvas.height - 90);
+  ctx.fillText('SPACE: Shoot', canvas.width/2, canvas.height - 65);
+  ctx.fillText('Goal: Reach the door!', canvas.width/2, canvas.height - 40);
+  ctx.textAlign = 'left';
+}
+
+function drawScanlines() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+  for (let y = 0; y < canvas.height; y += 2) {
+    ctx.fillRect(0, y, canvas.width, 1);
+  }
+}
+
+// --- GAME LOOP ---
+function loop(timestamp) {
+  const dt = 16; // Fixed timestep
+  
+  update();
+  draw();
+  
+  requestAnimationFrame(loop);
+}
+
+// --- INPUT HANDLERS ---
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space' && gameState === 'start') {
+    initAudio();
+    gameState = 'play';
+    initLevel();
+  }
+  if (e.code === 'KeyR' && gameState === 'gameover') {
+    score = 0;
+    lives = MAX_LIVES;
+    level = 1;
+    gameState = 'play';
+    initLevel();
+  }
+});
+
+// --- START ---
+loop();
+</script>
+</body>
+</html>

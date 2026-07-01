@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Robot-Filled Maze Shooter</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+    }
+    canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        border: 2px solid #333;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+</style>
+</head>
+<body>
+<canvas id="game" width="480" height="640"></canvas>
+<script>
+// ============================================================
+// Robot-Filled Maze Shooter - Original Homage
+// ============================================================
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// --- Constants ---
+const TILE_SIZE = 32;
+const COLS = 15;
+const ROWS = 20;
+const WIDTH = COLS * TILE_SIZE;
+const HEIGHT = ROWS * TILE_SIZE;
+const PLAYER_SPEED = 3;
+const BULLET_SPEED = 6;
+const ENEMY_SPEED = 1.5;
+const MAX_LIVES = 3;
+const MAX_BULLETS = 3;
+
+// Color palette
+const COLORS = {
+    bg: '#0a0a0a',
+    wall: '#4444ff',
+    wallHighlight: '#6666ff',
+    player: '#00ff00',
+    playerEye: '#ffffff',
+    enemy: '#ff0000',
+    enemyEye: '#ffff00',
+    bullet: '#ffff00',
+    exit: '#00ffff',
+    hud: '#00ff00',
+    text: '#ffffff',
+    scanline: 'rgba(0, 255, 0, 0.03)'
+};
+
+// --- Game State ---
+let gameState = 'start'; // 'start', 'play', 'over', 'win'
+let score = 0;
+let lives = MAX_LIVES;
+let level = 1;
+let keys = new Set();
+let player = { x: 0, y: 0, vx: 0, vy: 0, width: 20, height: 20, cooldown: 0 };
+let bullets = [];
+let enemies = [];
+let walls = [];
+let exitPos = { x: 0, y: 0 };
+let frameCount = 0;
+let showControls = true;
+let controlsTimer = 0;
+
+// --- Audio Context ---
+let audioCtx = null;
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function playSound(type) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    switch(type) {
+        case 'shoot':
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.1);
+            break;
+        case 'hit':
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.2);
+            break;
+        case 'die':
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.5);
+            break;
+        case 'win':
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.3);
+            break;
+    }
+}
+
+// --- Input Handler ---
+document.addEventListener('keydown', (e) => {
+    keys.add(e.code);
+    if (e.code === 'Space') {
+        e.preventDefault();
+        handleAction();
+    }
+    if (e.code === 'KeyR' && gameState === 'over') {
+        resetGame();
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    keys.delete(e.code);
+});
+
+function handleAction() {
+    initAudio();
+    if (gameState === 'start') {
+        gameState = 'play';
+        showControls = false;
+        return;
+    }
+    if (gameState === 'over') {
+        resetGame();
+        return;
+    }
+    if (gameState === 'play') {
+        shoot();
+    }
+}
+
+function shoot() {
+    if (player.cooldown > 0) return;
+    if (bullets.length >= MAX_BULLETS) return;
+    
+    let vx = 0, vy = 0;
+    if (keys.has('ArrowUp') || keys.has('KeyW')) vy = -BULLET_SPEED;
+    else if (keys.has('ArrowDown') || keys.has('KeyS')) vy = BULLET_SPEED;
+    else if (keys.has('ArrowLeft') || keys.has('KeyA')) vx = -BULLET_SPEED;
+    else if (keys.has('ArrowRight') || keys.has('KeyD')) vx = BULLET_SPEED;
+    
+    if (vx === 0 && vy === 0) return;
+    
+    bullets.push({
+        x: player.x + player.width / 2,
+        y: player.y + player.height / 2,
+        vx: vx,
+        vy: vy,
+        width: 6,
+        height: 6
+    });
+    
+    player.cooldown = 15;
+    playSound('shoot');
+}
+
+// --- Level Generation ---
+function generateLevel() {
+    walls = [];
+    enemies = [];
+    bullets = [];
+    
+    // Generate maze walls
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            // Border walls
+            if (y === 0 || y === ROWS - 1 || x === 0 || x === COLS - 1) {
+                walls.push({ x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE });
+                continue;
+            }
+            
+            // Random internal walls (sparse for playability)
+            if (Math.random() < 0.15 && !(x < 3 && y < 3)) {
+                walls.push({ x: x * TILE_SIZE, y: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE });
+            }
+        }
+    }
+    
+    // Place player
+    player.x = TILE_SIZE * 1.5;
+    player.y = TILE_SIZE * 1.5;
+    player.vx = 0;
+    player.vy = 0;
+    player.cooldown = 0;
+    
+    // Place exit
+    exitPos = {
+        x: (COLS - 2) * TILE_SIZE,
+        y: (ROWS - 2) * TILE_SIZE
+    };
+    
+    // Spawn enemies based on level
+    const enemyCount = 3 + level;
+    for (let i = 0; i < enemyCount; i++) {
+        let ex, ey;
+        do {
+            ex = Math.random() * (WIDTH - TILE_SIZE * 2) + TILE_SIZE;
+            ey = Math.random() * (HEIGHT - TILE_SIZE * 2) + TILE_SIZE;
+        } while (distance(ex, ey, player.x, player.y) < 100);
+        
+        enemies.push({
+            x: ex,
+            y: ey,
+            vx: (Math.random() - 0.5) * ENEMY_SPEED * 2,
+            vy: (Math.random() - 0.5) * ENEMY_SPEED * 2,
+            width: 20,
+            height: 20,
+            health: 1
+        });
+    }
+}
+
+function distance(x1, y1, x2, y2) {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+}
+
+// --- Collision Detection ---
+function checkCollision(rect1, rect2) {
+    return rect1.x < rect2.x + rect2.width &&
+           rect1.x + rect1.width > rect2.x &&
+           rect1.y < rect2.y + rect2.height &&
+           rect1.y + rect1.height > rect2.y;
+}
+
+function resolveWallCollision(entity) {
+    for (let wall of walls) {
+        if (checkCollision(entity, wall)) {
+            // Determine collision side
+            const overlapX = Math.min(
+                entity.x + entity.width - wall.x,
+                wall.x + wall.width - entity.x
+            );
+            const overlapY = Math.min(
+                entity.y + entity.height - wall.y,
+                wall.y + wall.height - entity.y
+            );
+            
+            if (overlapX < overlapY) {
+                if (entity.x < wall.x) entity.x = wall.x - entity.width;
+                else entity.x = wall.x + wall.width;
+                entity.vx = -entity.vx;
+            } else {
+                if (entity.y < wall.y) entity.y = wall.y - entity.height;
+                else entity.y = wall.y + wall.height;
+                entity.vy = -entity.vy;
+            }
+        }
+    }
+}
+
+// --- Update ---
+function update(dt) {
+    if (gameState !== 'play') return;
+    
+    frameCount++;
+    if (player.cooldown > 0) player.cooldown--;
+    
+    // Player movement
+    let dx = 0, dy = 0;
+    if (keys.has('ArrowUp') || keys.has('KeyW')) dy = -PLAYER_SPEED;
+    else if (keys.has('ArrowDown') || keys.has('KeyS')) dy = PLAYER_SPEED;
+    if (keys.has('ArrowLeft') || keys.has('KeyA')) dx = -PLAYER_SPEED;
+    else if (keys.has('ArrowRight') || keys.has('KeyD')) dx = PLAYER_SPEED;
+    
+    player.x += dx;
+    player.y += dy;
+    resolveWallCollision(player);
+    
+    // Update bullets
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        
+        // Wall collision
+        let hitWall = false;
+        for (let wall of walls) {
+            if (checkCollision(b, wall)) {
+                hitWall = true;
+                break;
+            }
+        }
+        
+        if (hitWall || b.x < 0 || b.x > WIDTH || b.y < 0 || b.y > HEIGHT) {
+            bullets.splice(i, 1);
+            continue;
+        }
+        
+        // Enemy collision
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            if (checkCollision(b, enemies[j])) {
+                enemies.splice(j, 1);
+                bullets.splice(i, 1);
+                score += 100;
+                playSound('hit');
+                break;
+            }
+        }
+    }
+    
+    // Update enemies
+    for (let enemy of enemies) {
+        enemy.x += enemy.vx;
+        enemy.y += enemy.vy;
+        resolveWallCollision(enemy);
+        
+        // Bounce off walls
+        if (enemy.x <= 0 || enemy.x + enemy.width >= WIDTH) enemy.vx = -enemy.vx;
+        if (enemy.y <= 0 || enemy.y + enemy.height >= HEIGHT) enemy.vy = -enemy.vy;
+        
+        // Player collision
+        if (checkCollision(player, enemy)) {
+            lives--;
+            playSound('die');
+            if (lives <= 0) {
+                gameState = 'over';
+            } else {
+                // Reset player position
+                player.x = TILE_SIZE * 1.5;
+                player.y = TILE_SIZE * 1.5;
+            }
+        }
+    }
+    
+    // Check win condition
+    if (checkCollision(player, exitPos)) {
+        if (enemies.length === 0) {
+            level++;
+            playSound('win');
+            generateLevel();
+        }
+    }
+}
+
+// --- Draw ---
+function draw() {
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    
+    if (gameState === 'start') {
+        drawStartScreen();
+        return;
+    }
+    
+    if (gameState === 'over') {
+        drawGameOver();
+        return;
+    }
+    
+    // Draw walls
+    ctx.fillStyle = COLORS.wall;
+    for (let wall of walls) {
+        ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+        ctx.fillStyle = COLORS.wallHighlight;
+        ctx.fillRect(wall.x, wall.y, wall.width, 2);
+        ctx.fillRect(wall.x, wall.y, 2, wall.height);
+        ctx.fillStyle = COLORS.wall;
+    }
+    
+    // Draw exit
+    ctx.fillStyle = COLORS.exit;
+    ctx.fillRect(exitPos.x, exitPos.y, exitPos.width, exitPos.height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(exitPos.x + 4, exitPos.y + 4, exitPos.width - 8, exitPos.height - 8);
+    
+    // Draw player
+    drawPlayer();
+    
+    // Draw enemies
+    for (let enemy of enemies) {
+        drawEnemy(enemy);
+    }
+    
+    // Draw bullets
+    ctx.fillStyle = COLORS.bullet;
+    for (let b of bullets) {
+        ctx.fillRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height);
+    }
+    
+    // Draw HUD
+    drawHUD();
+    
+    // Show controls overlay
+    if (showControls && frameCount < 300) {
+        drawControls();
+    }
+    
+    // CRT scanline effect
+    drawScanlines();
+}
+
+function drawPlayer() {
+    ctx.fillStyle = COLORS.player;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+    
+    // Eyes
+    ctx.fillStyle = COLORS.playerEye;
+    ctx.fillRect(player.x + 4, player.y + 4, 4, 4);
+    ctx.fillRect(player.x + 12, player.y + 4, 4, 4);
+}
+
+function drawEnemy(enemy) {
+    ctx.fillStyle = COLORS.enemy;
+    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    
+    // Eyes
+    ctx.fillStyle = COLORS.enemyEye;
+    ctx.fillRect(enemy.x + 4, enemy.y + 4, 4, 4);
+    ctx.fillRect(enemy.x + 12, enemy.y + 4, 4, 4);
+}
+
+function drawHUD() {
+    ctx.fillStyle = COLORS.hud;
+    ctx.font = '16px monospace';
+    ctx.fillText(`SCORE: ${score}`, 10, 25);
+    ctx.fillText(`LIVES: ${lives}`, 200, 25);
+    ctx.fillText(`LEVEL: ${level}`, 350, 25);
+    
+    // Draw remaining enemies indicator
+    ctx.fillText(`ENEMIES: ${enemies.length}`, 10, 45);
+}
+
+function drawControls() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(WIDTH / 2 - 150, HEIGHT - 80, 300, 60);
+    
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '12px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('ARROW KEYS / WASD: Move', WIDTH / 2, HEIGHT - 60);
+    ctx.fillText('SPACE: Shoot', WIDTH / 2, HEIGHT - 40);
+    ctx.textAlign = 'left';
+}
+
+function drawStartScreen() {
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '24px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('ROBOT-FILLED', WIDTH / 2, HEIGHT / 2 - 80);
+    ctx.fillText('MAZE SHOOTER', WIDTH / 2, HEIGHT / 2 - 50);
+    
+    ctx.font = '16px monospace';
+    ctx.fillText('PRESS SPACE TO START', WIDTH / 2, HEIGHT / 2 + 20);
+    
+    ctx.font = '12px monospace';
+    ctx.fillText('ARROW KEYS / WASD: Move', WIDTH / 2, HEIGHT / 2 + 60);
+    ctx.fillText('SPACE: Shoot', WIDTH / 2, HEIGHT / 2 + 80);
+    
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#888';
+    ctx.fillText('Robot-Filled Maze Shooter', WIDTH / 2, HEIGHT - 40);
+    ctx.fillText('original-genre homage, no copyrighted IP', WIDTH / 2, HEIGHT - 25);
+    ctx.textAlign = 'left';
+}
+
+function drawGameOver() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    
+    ctx.fillStyle = '#ff0000';
+    ctx.font = '32px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', WIDTH / 2, HEIGHT / 2 - 40);
+    
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '16px monospace';
+    ctx.fillText(`FINAL SCORE: ${score}`, WIDTH / 2, HEIGHT / 2 + 20);
+    ctx.fillText(`LEVEL REACHED: ${level}`, WIDTH / 2, HEIGHT / 2 + 50);
+    
+    ctx.font = '14px monospace';
+    ctx.fillText('PRESS R TO RESTART', WIDTH / 2, HEIGHT / 2 + 100);
+    ctx.textAlign = 'left';
+}
+
+function drawScanlines() {
+    ctx.fillStyle = COLORS.scanline;
+    for (let y = 0; y < HEIGHT; y += 2) {
+        ctx.fillRect(0, y, WIDTH, 1);
+    }
+}
+
+// --- Game Loop ---
+function loop(timestamp) {
+    const dt = 16; // Fixed timestep
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+}
+
+function resetGame() {
+    gameState = 'play';
+    score = 0;
+    lives = MAX_LIVES;
+    level = 1;
+    frameCount = 0;
+    generateLevel();
+}
+
+// --- Initialize ---
+generateLevel();
+loop();
+</script>
+</body>
+</html>

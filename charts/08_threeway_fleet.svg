@@ -1,0 +1,122 @@
+<svg width="860" height="460" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="full" viewBox="0 0 860 460">
+<rect width="860" height="460" x="0" y="0" fill="#0d1117"></rect>
+<path d="M86.2 382.5L826 382.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr2-cls-14"></path>
+<path d="M86.2 310.5L826 310.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr2-cls-14"></path>
+<path d="M86.2 239.5L826 239.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr2-cls-14"></path>
+<path d="M86.2 167.5L826 167.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr2-cls-14"></path>
+<path d="M86.2 96.5L826 96.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr2-cls-14"></path>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="-6" transform="translate(86.16 82)" fill="#7d8590">aggregate decode t/s</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="6" transform="translate(456.08 416)" fill="#7d8590">concurrent agents</text>
+<path d="M86.2 382.5L826 382.5" fill="none" pointer-events="visible" stroke="#30363d" stroke-linecap="round" class="zr2-cls-14"></path>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(78.16 382)" fill="#8b949e">0</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(78.16 310.5)" fill="#8b949e">50</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(78.16 239)" fill="#8b949e">100</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(78.16 167.5)" fill="#8b949e">150</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(78.16 96)" fill="#8b949e">200</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(123.152 390)" fill="#8b949e">1</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(197.136 390)" fill="#8b949e">2</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(271.12 390)" fill="#8b949e">4</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(345.104 390)" fill="#8b949e">8</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(419.088 390)" fill="#8b949e">16</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(493.072 390)" fill="#8b949e">24</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(567.056 390)" fill="#8b949e">32</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(641.04 390)" fill="#8b949e">40</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(715.024 390)" fill="#8b949e">48</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(789.008 390)" fill="#8b949e">56</text>
+<g clip-path="url(#zr2-c0)">
+<path d="M123.2 269.7L197.1 279.3L271.1 259.4L345.1 251.3L419.1 241.7L493.1 234.4L567.1 221.8L641 216.7L715 206.3L789 201" fill="none" pointer-events="visible" stroke="#8b949e" stroke-width="2.6" stroke-linejoin="bevel" class="zr2-cls-16"></path>
+</g>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,123.152,269.745)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="0" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,197.136,279.326)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="1" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,271.12,259.449)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="2" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,345.104,251.298)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="3" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,419.088,241.717)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="4" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,493.072,234.424)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="5" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,567.056,221.84)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="6" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,641.04,216.692)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="7" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,715.024,206.253)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="8" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,789.008,200.962)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="9" ecmeta_ssr_type="chart" class="zr2-cls-17"></path>
+<g clip-path="url(#zr2-c1)">
+<path d="M123.2 258.7L197.1 281L271.1 209.3L345.1 192.1L419.1 192.5L493.1 183.2L567.1 168.8L641 170.4L715 157.5L789 152.9" fill="none" pointer-events="visible" stroke="#3fb950" stroke-width="2.6" stroke-dasharray="10.4,5.2" stroke-linejoin="bevel" class="zr2-cls-16"></path>
+</g>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,123.152,258.734)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="0" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,197.136,281.042)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="1" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,271.12,209.256)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="2" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,345.104,192.096)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="3" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,419.088,192.525)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="4" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,493.072,183.23)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="5" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,567.056,168.787)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="6" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,641.04,170.36)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="7" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,715.024,157.49)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="8" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,789.008,152.914)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="9" ecmeta_ssr_type="chart" class="zr2-cls-18"></path>
+<g clip-path="url(#zr2-c2)">
+<path d="M123.2 269.2L197.1 280.8L271.1 212.1L345.1 192.1L419.1 192.8L493.1 176.4L567.1 168.8L641 161.8L715 152.1L789 150.6" fill="none" pointer-events="visible" stroke="#58a6ff" stroke-width="2.6" stroke-linejoin="bevel" class="zr2-cls-16"></path>
+</g>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,123.152,269.173)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="0" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,197.136,280.756)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="1" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,271.12,212.116)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="2" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,345.104,192.096)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="3" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,419.088,192.811)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="4" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,493.072,176.366)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="5" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,567.056,168.787)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="6" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,641.04,161.78)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="7" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,715.024,152.056)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="8" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,789.008,150.626)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="9" ecmeta_ssr_type="chart" class="zr2-cls-19"></path>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:11px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="-5.5" transform="translate(789.008 141.376)" fill="#8b949e">161.8</text>
+<path d="M-5 -5l436.5 0l0 22l-436.5 0Z" transform="translate(402.52 27)" fill="rgb(0,0,0)" fill-opacity="0" stroke="#b7b9be" stroke-width="0" class="zr2-cls-14"></path>
+<path d="M2 0L12 0A2 2 0 0 1 14 2L14 6A2 2 0 0 1 12 8L2 8A2 2 0 0 1 0 6L0 2A2 2 0 0 1 2 0Z" transform="translate(403.52 29)" fill="#8b949e" stroke="#0d1117" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" ecmeta_series_index="0" ecmeta_data_index="0" ecmeta_ssr_type="legend" ecmeta_silent="true" class="zr2-cls-14"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" x="19" y="4" transform="translate(403.52 29)" fill="#8b949e">upstream defaults</text>
+<path d="M-1 -2l115.8 0l0 12l-115.8 0Z" transform="translate(403.52 29)" fill="none" pointer-events="visible" ecmeta_series_index="0" ecmeta_data_index="0" ecmeta_ssr_type="legend" class="zr2-cls-20"></path>
+<path d="M2 0L12 0A2 2 0 0 1 14 2L14 6A2 2 0 0 1 12 8L2 8A2 2 0 0 1 0 6L0 2A2 2 0 0 1 2 0Z" transform="translate(537.28 29)" fill="#58a6ff" stroke="#0d1117" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" ecmeta_series_index="2" ecmeta_data_index="1" ecmeta_ssr_type="legend" ecmeta_silent="true" class="zr2-cls-14"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" x="19" y="4" transform="translate(537.28 29)" fill="#8b949e">upstream + Turbo flags</text>
+<path d="M-1 -2l144.1 0l0 12l-144.1 0Z" transform="translate(537.28 29)" fill="none" pointer-events="visible" ecmeta_series_index="2" ecmeta_data_index="1" ecmeta_ssr_type="legend" class="zr2-cls-20"></path>
+<path d="M2 0L12 0A2 2 0 0 1 14 2L14 6A2 2 0 0 1 12 8L2 8A2 2 0 0 1 0 6L0 2A2 2 0 0 1 2 0Z" transform="translate(699.36 29)" fill="#3fb950" stroke="#0d1117" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" ecmeta_series_index="1" ecmeta_data_index="2" ecmeta_ssr_type="legend" ecmeta_silent="true" class="zr2-cls-14"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" x="19" y="4" transform="translate(699.36 29)" fill="#8b949e">Turbo build (+fusion)</text>
+<path d="M-1 -2l130.6 0l0 12l-130.6 0Z" transform="translate(699.36 29)" fill="none" pointer-events="visible" ecmeta_series_index="1" ecmeta_data_index="2" ecmeta_ssr_type="legend" class="zr2-cls-20"></path>
+<path d="M-5 -5l592.8 0l0 54l-592.8 0Z" transform="translate(31 23)" fill="rgb(0,0,0)" fill-opacity="0" stroke="#3c3c41" stroke-width="0" class="zr2-cls-14"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:18px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;font-weight:600;" xml:space="preserve" y="9" transform="translate(31 23)" fill="#e6edf3">Ornith · fleet decode, 3-way</text>
+<path d="M0 28l582.8 0l0 16l-582.8 0Z" transform="translate(31 23)" fill="none" pointer-events="visible" class="zr2-cls-14"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="36" transform="translate(31 23)" fill="#7d8590">aggregate decode t/s vs concurrent agents · config win 1.28–1.45× · fusion 0.96–1.02× at concurrency</text>
+<defs >
+<clipPath id="zr2-c0">
+<path d="M84 94.7l744 0l0 288.6l-744 0Z" fill="#000" class="zr2-cls-15"></path>
+</clipPath>
+<clipPath id="zr2-c1">
+<path d="M84 94.7l744 0l0 288.6l-744 0Z" fill="#000" class="zr2-cls-15"></path>
+</clipPath>
+<clipPath id="zr2-c2">
+<path d="M84 94.7l744 0l0 288.6l-744 0Z" fill="#000" class="zr2-cls-15"></path>
+</clipPath>
+</defs>
+<style ><![CDATA[
+.zr2-cls-14:hover {
+pointer-events:none;
+}
+.zr2-cls-15:hover {
+cursor:pointer;
+fill:rgba(0,0,0,1);
+}
+.zr2-cls-16:hover {
+cursor:pointer;
+}
+.zr2-cls-17:hover {
+cursor:pointer;
+fill:rgba(152,162,173,1);
+}
+.zr2-cls-18:hover {
+cursor:pointer;
+fill:rgba(69,203,88,1);
+}
+.zr2-cls-19:hover {
+cursor:pointer;
+fill:rgba(96,182,255,1);
+}
+.zr2-cls-20:hover {
+cursor:pointer;
+fill:rgba(0,0,0,0);
+}
+
+]]>
+
+</style>
+</svg>

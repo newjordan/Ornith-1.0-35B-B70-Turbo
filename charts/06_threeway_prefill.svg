@@ -1,0 +1,113 @@
+<svg width="860" height="460" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="full" viewBox="0 0 860 460">
+<rect width="860" height="460" x="0" y="0" fill="#0d1117"></rect>
+<path d="M96.2 382.5L826 382.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M96.2 310.5L826 310.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M96.2 239.5L826 239.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M96.2 167.5L826 167.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M96.2 96.5L826 96.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M96.5 96L96.5 382" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M278.5 96L278.5 382" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M461.5 96L461.5 382" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M643.5 96L643.5 382" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<path d="M826.5 96L826.5 382" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr0-cls-0"></path>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="-6" transform="translate(96.24 82)" fill="#7d8590">prefill t/s</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="6" transform="translate(461.12 416)" fill="#7d8590">prompt tokens</text>
+<path d="M96.2 382.5L826 382.5" fill="none" pointer-events="visible" stroke="#30363d" stroke-linecap="round" class="zr0-cls-0"></path>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(88.24 382)" fill="#8b949e">0</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(88.24 310.5)" fill="#8b949e">500</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(88.24 239)" fill="#8b949e">1,000</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(88.24 167.5)" fill="#8b949e">1,500</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(88.24 96)" fill="#8b949e">2,000</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(96.24 390)" fill="#8b949e">100</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(278.68 390)" fill="#8b949e">1k</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(461.12 390)" fill="#8b949e">10k</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(643.56 390)" fill="#8b949e">100k</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(826 390)" fill="#8b949e">1000k</text>
+<g clip-path="url(#zr0-c0)">
+<path d="M261.5 228.3L373.6 228.4L432.4 234.6L490.9 244.9L547.4 264L604.8 292.2L663.9 322.9" fill="none" pointer-events="visible" stroke="#8b949e" stroke-width="2.6" stroke-linejoin="bevel" class="zr0-cls-2"></path>
+</g>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,261.4934,228.275)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="0" ecmeta_ssr_type="chart" class="zr0-cls-3"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,373.5892,228.418)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="1" ecmeta_ssr_type="chart" class="zr0-cls-3"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,432.4398,234.567)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="2" ecmeta_ssr_type="chart" class="zr0-cls-3"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,490.9035,244.863)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="3" ecmeta_ssr_type="chart" class="zr0-cls-3"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,547.4044,264.025)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="4" ecmeta_ssr_type="chart" class="zr0-cls-3"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,604.8373,292.196)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="5" ecmeta_ssr_type="chart" class="zr0-cls-3"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,663.9354,322.941)" fill="#8b949e" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="0" ecmeta_data_index="6" ecmeta_ssr_type="chart" class="zr0-cls-3"></path>
+<g clip-path="url(#zr0-c1)">
+<path d="M261.5 183.8L373.6 118L432.4 134L490.9 163.1L547.4 209.7L604.8 263.9L663.9 312.2" fill="none" pointer-events="visible" stroke="#3fb950" stroke-width="2.6" stroke-dasharray="10.4,5.2" stroke-linejoin="bevel" class="zr0-cls-2"></path>
+</g>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,261.4934,183.802)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="0" ecmeta_ssr_type="chart" class="zr0-cls-4"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,373.5892,118.022)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="1" ecmeta_ssr_type="chart" class="zr0-cls-4"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,432.4398,134.038)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="2" ecmeta_ssr_type="chart" class="zr0-cls-4"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,490.9035,163.067)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="3" ecmeta_ssr_type="chart" class="zr0-cls-4"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,547.4044,209.685)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="4" ecmeta_ssr_type="chart" class="zr0-cls-4"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,604.8373,263.882)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="5" ecmeta_ssr_type="chart" class="zr0-cls-4"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3,0,0,3,663.9354,312.216)" fill="#3fb950" stroke="#0d1117" stroke-width="0.5" ecmeta_series_index="1" ecmeta_data_index="6" ecmeta_ssr_type="chart" class="zr0-cls-4"></path>
+<g clip-path="url(#zr0-c2)">
+<path d="M261.5 184.9L373.6 118.9L432.4 133L490.9 162.1L547.4 209.3L604.8 263.6L663.9 312.1" fill="none" pointer-events="visible" stroke="#58a6ff" stroke-width="2.6" stroke-linejoin="bevel" class="zr0-cls-2"></path>
+</g>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,261.4934,184.946)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="0" ecmeta_ssr_type="chart" class="zr0-cls-5"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,373.5892,118.88)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="1" ecmeta_ssr_type="chart" class="zr0-cls-5"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,432.4398,133.037)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="2" ecmeta_ssr_type="chart" class="zr0-cls-5"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,490.9035,162.066)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="3" ecmeta_ssr_type="chart" class="zr0-cls-5"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,547.4044,209.256)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="4" ecmeta_ssr_type="chart" class="zr0-cls-5"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,604.8373,263.596)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="5" ecmeta_ssr_type="chart" class="zr0-cls-5"></path>
+<path d="M1 0A1 1 0 1 1 1 -0.1A1 1 0 0 1 1 0" transform="matrix(3.5,0,0,3.5,663.9354,312.073)" fill="#58a6ff" stroke="#0d1117" stroke-width="0.42857142857142855" ecmeta_series_index="2" ecmeta_data_index="6" ecmeta_ssr_type="chart" class="zr0-cls-5"></path>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:11px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="-5.5" transform="translate(663.9354 302.823)" fill="#8b949e">489</text>
+<path d="M-5 -5l436.5 0l0 22l-436.5 0Z" transform="translate(402.52 27)" fill="rgb(0,0,0)" fill-opacity="0" stroke="#b7b9be" stroke-width="0" class="zr0-cls-0"></path>
+<path d="M2 0L12 0A2 2 0 0 1 14 2L14 6A2 2 0 0 1 12 8L2 8A2 2 0 0 1 0 6L0 2A2 2 0 0 1 2 0Z" transform="translate(403.52 29)" fill="#8b949e" stroke="#0d1117" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" ecmeta_series_index="0" ecmeta_data_index="0" ecmeta_ssr_type="legend" ecmeta_silent="true" class="zr0-cls-0"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" x="19" y="4" transform="translate(403.52 29)" fill="#8b949e">upstream defaults</text>
+<path d="M-1 -2l115.8 0l0 12l-115.8 0Z" transform="translate(403.52 29)" fill="none" pointer-events="visible" ecmeta_series_index="0" ecmeta_data_index="0" ecmeta_ssr_type="legend" class="zr0-cls-6"></path>
+<path d="M2 0L12 0A2 2 0 0 1 14 2L14 6A2 2 0 0 1 12 8L2 8A2 2 0 0 1 0 6L0 2A2 2 0 0 1 2 0Z" transform="translate(537.28 29)" fill="#58a6ff" stroke="#0d1117" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" ecmeta_series_index="2" ecmeta_data_index="1" ecmeta_ssr_type="legend" ecmeta_silent="true" class="zr0-cls-0"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" x="19" y="4" transform="translate(537.28 29)" fill="#8b949e">upstream + Turbo flags</text>
+<path d="M-1 -2l144.1 0l0 12l-144.1 0Z" transform="translate(537.28 29)" fill="none" pointer-events="visible" ecmeta_series_index="2" ecmeta_data_index="1" ecmeta_ssr_type="legend" class="zr0-cls-6"></path>
+<path d="M2 0L12 0A2 2 0 0 1 14 2L14 6A2 2 0 0 1 12 8L2 8A2 2 0 0 1 0 6L0 2A2 2 0 0 1 2 0Z" transform="translate(699.36 29)" fill="#3fb950" stroke="#0d1117" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" ecmeta_series_index="1" ecmeta_data_index="2" ecmeta_ssr_type="legend" ecmeta_silent="true" class="zr0-cls-0"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" x="19" y="4" transform="translate(699.36 29)" fill="#8b949e">Turbo build (+fusion)</text>
+<path d="M-1 -2l130.6 0l0 12l-130.6 0Z" transform="translate(699.36 29)" fill="none" pointer-events="visible" ecmeta_series_index="1" ecmeta_data_index="2" ecmeta_ssr_type="legend" class="zr0-cls-6"></path>
+<path d="M-5 -5l546 0l0 54l-546 0Z" transform="translate(31 23)" fill="rgb(0,0,0)" fill-opacity="0" stroke="#3c3c41" stroke-width="0" class="zr0-cls-0"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:18px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;font-weight:600;" xml:space="preserve" y="9" transform="translate(31 23)" fill="#e6edf3">Ornith · prefill, 3-way</text>
+<path d="M0 28l536 0l0 16l-536 0Z" transform="translate(31 23)" fill="none" pointer-events="visible" class="zr0-cls-0"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="36" transform="translate(31 23)" fill="#7d8590">prefill t/s vs prompt tokens · config win 1.18–1.71× · fusion adds ~nothing on top (1.00–1.01×)</text>
+<defs >
+<clipPath id="zr0-c0">
+<path d="M94 94.7l734 0l0 288.6l-734 0Z" fill="#000" class="zr0-cls-1"></path>
+</clipPath>
+<clipPath id="zr0-c1">
+<path d="M94 94.7l734 0l0 288.6l-734 0Z" fill="#000" class="zr0-cls-1"></path>
+</clipPath>
+<clipPath id="zr0-c2">
+<path d="M94 94.7l734 0l0 288.6l-734 0Z" fill="#000" class="zr0-cls-1"></path>
+</clipPath>
+</defs>
+<style ><![CDATA[
+.zr0-cls-0:hover {
+pointer-events:none;
+}
+.zr0-cls-1:hover {
+cursor:pointer;
+fill:rgba(0,0,0,1);
+}
+.zr0-cls-2:hover {
+cursor:pointer;
+}
+.zr0-cls-3:hover {
+cursor:pointer;
+fill:rgba(152,162,173,1);
+}
+.zr0-cls-4:hover {
+cursor:pointer;
+fill:rgba(69,203,88,1);
+}
+.zr0-cls-5:hover {
+cursor:pointer;
+fill:rgba(96,182,255,1);
+}
+.zr0-cls-6:hover {
+cursor:pointer;
+fill:rgba(0,0,0,0);
+}
+
+]]>
+
+</style>
+</svg>

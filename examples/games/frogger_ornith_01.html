@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frogger - Browser Edition</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            color: white;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        canvas {
+            display: block;
+            background-color: #000;
+        }
+
+        /* Scanline effect for retro feel */
+        #game-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="600" height="660"></canvas>
+</div>
+
+<script>
+/**
+ * FROGGER - Browser Edition
+ * A complete implementation using HTML5 Canvas and Vanilla JS.
+ */
+
+// --- Constants & Config ---
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const TILE_SIZE = 40; // Grid size for movement
+const COLS = 15;
+const ROWS = 15; // 1 for HUD, 5 for Road, 1 for Median, 5 for River, 1 for Goal, 2 for Start
+
+// Game States
+const STATE = {
+    MENU: 0,
+    PLAYING: 1,
+    LEVEL_TRANSITION: 2,
+    GAME_OVER: 3,
+    VICTORY: 4
+};
+
+// Colors
+const C_BG = '#000';
+const C_ROAD = '#444';
+const C_ROAD_LINE = '#666';
+const C_WATER = '#006994';
+const C_MEDIAN = '#2E8B57';
+const C_GOAL = '#228B22';
+const C_START = '#555';
+const C_FROG = '#00FF00';
+const C_FROG_EYE = '#FFF';
+const C_TEXT = '#FFF';
+
+// --- Game Variables ---
+let currentState = STATE.MENU;
+let score = 0;
+let lives = 3;
+let level = 1;
+let frameCount = 0;
+let transitionTimer = 0;
+
+// Entities
+let frog = { x: 7, y: 14, active: true, riding: null };
+let vehicles = [];
+let logs = [];
+let particles = []; // For death effects
+
+// --- Input Handling ---
+document.addEventListener('keydown', (e) => {
+    if (currentState === STATE.MENU && (e.key === 'Enter' || e.key === ' ')) {
+        startGame();
+    } else if (currentState === STATE.GAME_OVER && (e.key === 'Enter' || e.key === ' ')) {
+        resetGame();
+    } else if (currentState === STATE.VICTORY && (e.key === 'Enter' || e.key === ' ')) {
+        resetGame();
+    } else if (currentState === STATE.PLAYING) {
+        handleMovement(e.key);
+    }
+});
+
+function handleMovement(key) {
+    if (!frog.active) return;
+
+    let dx = 0;
+    let dy = 0;
+
+    switch(key) {
+        case 'ArrowUp': dy = -1; break;
+        case 'ArrowDown': dy = 1; break;
+        case 'ArrowLeft': dx = -1; break;
+        case 'ArrowRight': dx = 1; break;
+        default: return;
+    }
+
+    const newX = frog.x + dx;
+    const newY = frog.y + dy;
+
+    // Boundaries
+    if (newX < 0 || newX >= COLS || newY < 0 || newY >= ROWS) return;
+
+    frog.x = newX;
+    frog.y = newY;
+    
+    // Reset riding state on manual move
+    frog.riding = null;
+}
+
+// --- Game Logic ---
+
+function startGame() {
+    score = 0;
+    lives = 3;
+    level = 1;
+    resetLevel();
+    currentState = STATE.PLAYING;
+}
+
+function resetGame() {
+    currentState = STATE.MENU;
+}
+
+function resetLevel() {
+    frog.x = 7;
+    frog.y = 14;
+    frog.active = true;
+    frog.riding = null;
+    vehicles = [];
+    logs = [];
+    particles = [];
+    
+    // Generate Level 1
+    if (level === 1) {
+        initLevel1();
+    } else {
+        initLevel2();
+    }
+}
+
+// --- Level Configurations ---
+
+function initLevel1() {
+    // Road: 3 cars, varying speeds
+    vehicles.push(createVehicle(3, 0.02));
+    vehicles.push(createVehicle(9, 0.03));
+    vehicles.push(createVehicle(5, 0.015));
+
+    // River: 3 groups of logs
+    logs.push(createLog(2, 0.015));
+    logs.push(createLog(8, 0.02));
+    logs.push(createLog(5, 0.01));
+}
+
+function initLevel2() {
+    // Road: Faster, more cars
+    vehicles.push(createVehicle(2, 0.04));
+    vehicles.push(createVehicle(7, 0.05));
+    vehicles.push(createVehicle(11, 0.04));
+    vehicles.push(createVehicle(4, 0.03));
+
+    // River: Faster, more logs
+    logs.push(createLog(1, 0.03));
+    logs.push(createLog(6, 0.035));
+    logs.push(createLog(11, 0.03));
+    logs.push(createLog(4, 0.025));
+}
+
+function createVehicle(col, speed) {
+    return {
+        type: 'car',
+        x: col * TILE_SIZE,
+        y: 0, // Will be set based on row
+        w: TILE_SIZE,
+        h: TILE_SIZE,
+        speed: speed,
+        color: Math.random() > 0.5 ? '#FF4444' : '#FFFF00',
+        direction: 1 // 1 = right, -1 = left
+    };
+}
+
+function createLog(row, speed) {
+    return {
+        type: 'log',
+        x: 0,
+        y: row * TILE_SIZE,
+        w: TILE_SIZE * 3, // Logs are wider
+        h: TILE_SIZE,
+        speed: speed,
+        direction: 1
+    };
+}
+
+// --- Update Loop ---
+
+function update() {
+    if (currentState !== STATE.PLAYING) return;
+
+    frameCount++;
+
+    // Update Vehicles
+    vehicles.forEach(v => {
+        v.x += v.speed * v.direction * (level === 1 ? 1 : 1.5); // Speed multiplier for level 2
+        
+        // Wrap around
+        if (v.direction === 1 && v.x > COLS * TILE_SIZE) v.x = -TILE_SIZE;
+        if (v.direction === -1 && v.x < -TILE_SIZE) v.x = COLS * TILE_SIZE;
+    });
+
+    // Update Logs
+    logs.forEach(l => {
+        l.x += l.speed * l.direction * (level === 1 ? 1 : 1.5);
+        
+        if (l.direction === 1 && l.x > COLS * TILE_SIZE) l.x = -l.w;
+        if (l.direction === -1 && l.x < -l.w) l.x = COLS * TILE_SIZE;
+    });
+
+    // Collision Detection
+    checkCollisions();
+    
+    // Update Particles
+    particles.forEach((p, index) => {
+        p.life--;
+        p.y -= 1;
+        if (p.life <= 0) particles.splice(index, 1);
+    });
+}
+
+function checkCollisions() {
+    const frogRect = {
+        x: frog.x * TILE_SIZE,
+        y: frog.y * TILE_SIZE,
+        w: TILE_SIZE,
+        h: TILE_SIZE
+    };
+
+    // 1. Check Vehicle Collision (Rows 1-5)
+    for (let v of vehicles) {
+        if (rectIntersect(frogRect, v)) {
+            die();
+            return;
+        }
+    }
+
+    // 2. Check River Logic (Rows 10-14)
+    // If in water row, must be on a log
+    if (frog.y >= 10 && frog.y <= 14) {
+        let onLog = false;
+        for (let l of logs) {
+            if (rectIntersect(frogRect, l)) {
+                onLog = true;
+                // Move frog with log
+                frog.x += (l.speed * l.direction * (level === 1 ? 1 : 1.5)) / TILE_SIZE;
+                break;
+            }
+        }
+        
+        if (!onLog) {
+            die();
+            return;
+        }
+        
+        // Check if log went off screen
+        if (frog.x < -1 || frog.x > COLS) {
+            die();
+            return;
+        }
+    }
+
+    // 3. Check Goal (Row 0)
+    if (frog.y === 0) {
+        score += 50;
+        score += (level === 1 ? 50 : 100); // Bonus for level 2
+        frog.y = 14; // Reset position
+        frog.x = 7;
+        frog.active = true;
+        
+        // Check Level Completion
+        if (score >= 300) {
+            level++;
+            if (level > 2) {
+                currentState = STATE.VICTORY;
+            } else {
+                currentState = STATE.LEVEL_TRANSITION;
+                transitionTimer = 100; // Frames to show transition
+            }
+        }
+    }
+}
+
+function die() {
+    lives--;
+    createParticles(frog.x * TILE_SIZE + TILE_SIZE/2, frog.y * TILE_SIZE + TILE_SIZE/2, '#00FF00');
+    
+    if (lives <= 0) {
+        currentState = STATE.GAME_OVER;
+    } else {
+        // Reset frog
+        frog.x = 7;
+        frog.y = 14;
+        frog.active = true;
+        frog.riding = null;
+    }
+}
+
+function createParticles(x, y, color) {
+    for(let i=0; i<10; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            life: 20,
+            color: color,
+            vx: (Math.random() - 0.5) * 4
+        });
+    }
+}
+
+function rectIntersect(r1, r2) {
+    return !(r2.x > r1.x + r1.w || 
+             r2.x + r2.w < r1.x || 
+             r2.y > r1.y + r1.h || 
+             r2.y + r2.h < r1.y);
+}
+
+// --- Drawing ---
+
+function draw() {
+    // Clear Screen
+    ctx.fillStyle = C_BG;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (currentState === STATE.MENU) {
+        drawMenu();
+    } else {
+        drawGame();
+        drawHUD();
+        
+        if (currentState === STATE.LEVEL_TRANSITION) {
+            drawLevelTransition();
+        }
+        if (currentState === STATE.GAME_OVER) {
+            drawGameOver();
+        }
+        if (currentState === STATE.VICTORY) {
+            drawVictory();
+        }
+    }
+}
+
+function drawGame() {
+    // 1. Draw Backgrounds
+    // Road (Rows 1-5)
+    ctx.fillStyle = C_ROAD;
+    ctx.fillRect(0, TILE_SIZE, canvas.width, TILE_SIZE * 5);
+    
+    // Median (Row 6)
+    ctx.fillStyle = C_MEDIAN;
+    ctx.fillRect(0, TILE_SIZE * 6, canvas.width, TILE_SIZE);
+    
+    // River (Rows 10-14)
+    ctx.fillStyle = C_WATER;
+    ctx.fillRect(0, TILE_SIZE * 10, canvas.width, TILE_SIZE * 5);
+    
+    // Goal (Row 0)
+    ctx.fillStyle = C_GOAL;
+    ctx.fillRect(0, 0, canvas.width, TILE_SIZE);
+    
+    // Start (Row 14)
+    ctx.fillStyle = C_START;
+    ctx.fillRect(0, TILE_SIZE * 14, canvas.width, TILE_SIZE);
+
+    // 2. Draw Logs
+    logs.forEach(l => {
+        ctx.fillStyle = '#8B4513'; // SaddleBrown
+        ctx.fillRect(l.x, l.y, l.w, l.h);
+        // Detail
+        ctx.fillStyle = '#5C3317';
+        ctx.fillRect(l.x + 5, l.y + 5, l.w - 10, l.h - 10);
+    });
+
+    // 3. Draw Vehicles
+    vehicles.forEach(v => {
+        ctx.fillStyle = v.color;
+        ctx.fillRect(v.x, v.y + 5, v.w, v.h - 10);
+        // Windshield
+        ctx.fillStyle = '#ADD8E6';
+        if (v.direction === 1) {
+            ctx.fillRect(v.x + v.w - 10, v.y + 8, 8, v.h - 16);
+        } else {
+            ctx.fillRect(v.x + 2, v.y + 8, 8, v.h - 16);
+        }
+    });
+
+    // 4. Draw Frog
+    if (frog.active) {
+        const fx = frog.x * TILE_SIZE;
+        const fy = frog.y * TILE_SIZE;
+        
+        ctx.fillStyle = C_FROG;
+        ctx.fillRect(fx + 5, fy + 5, TILE_SIZE - 10, TILE_SIZE - 10);
+        
+        // Eyes
+        ctx.fillStyle = C_FROG_EYE;
+        ctx.fillRect(fx + 8, fy + 8, 6, 6);
+        ctx.fillRect(fx + 26, fy + 8, 6, 6);
+    }
+
+    // 5. Draw Particles
+    particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 4, 4);
+    });
+}
+
+function drawHUD() {
+    ctx.fillStyle = C_TEXT;
+    ctx.font = '20px "Courier New"';
+    ctx.fillText(`SCORE: ${score}`, 10, 25);
+    ctx.fillText(`LEVEL: ${level}`, 200, 25);
+    ctx.fillText(`LIVES: ${lives}`, 350, 25);
+}
+
+function drawMenu() {
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = C_TEXT;
+    ctx.textAlign = 'center';
+    
+    ctx.font = '60px "Courier New"';
+    ctx.fillText("FROGGER", canvas.width/2, 150);
+    
+    ctx.font = '20px "Courier New"';
+    ctx.fillText("Use Arrow Keys to Move", canvas.width/2, 250);
+    ctx.fillText("Avoid Cars", canvas.width/2, 290);
+    ctx.fillText("Ride the Logs", canvas.width/2, 330);
+    ctx.fillText("Reach the Top", canvas.width/2, 370);
+    
+    ctx.fillStyle = '#00FF00';
+    ctx.font = '30px "Courier New"';
+    ctx.fillText("PRESS ENTER TO START", canvas.width/2, 480);
+    
+    ctx.textAlign = 'left';
+}
+
+function drawLevelTransition() {
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = C_TEXT;
+    ctx.textAlign = 'center';
+    ctx.font = '40px "Courier New"';
+    ctx.fillText(`LEVEL ${level} COMPLETE!`, canvas.width/2, canvas.height/2);
+    ctx.textAlign = 'left';
+}
+
+function drawGameOver() {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#FF0000';
+    ctx.textAlign = 'center';
+    ctx.font = '60px "Courier New"';
+    ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
+    
+    ctx.fillStyle = C_TEXT;
+    ctx.font = '20px "Courier New"';
+    ctx.fillText(`Final Score: ${score}`, canvas.width/2, canvas.height/2 + 50);
+    ctx.fillText("Press Enter to Restart", canvas.width/2, canvas.height/2 + 100);
+    ctx.textAlign = 'left';
+}
+
+function drawVictory() {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#FFD700';
+    ctx.textAlign = 'center';
+    ctx.font = '50px "Courier New"';
+    ctx.fillText("YOU WIN!", canvas.width/2, canvas.height/2 - 50);
+    
+    ctx.fillStyle = C_TEXT;
+    ctx.font = '25px "Courier New"';
+    ctx.fillText("All levels cleared!", canvas.width/2, canvas.height/2 + 10);
+    ctx.fillText(`Final Score: ${score}`, canvas.width/2, canvas.height/2 + 50);
+    ctx.fillText("Press Enter to Play Again", canvas.width/2, canvas.height/2 + 100);
+    ctx.textAlign = 'left';
+}
+
+// --- Main Loop ---
+
+function loop() {
+    // Logic
+    if (currentState === STATE.LEVEL_TRANSITION) {
+        transitionTimer--;
+        if (transitionTimer <= 0) {
+            currentState = STATE.PLAYING;
+            resetLevel();
+        }
+    }
+    
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+// Start Loop
+loop();
+
+</script>
+</body>
+</html>

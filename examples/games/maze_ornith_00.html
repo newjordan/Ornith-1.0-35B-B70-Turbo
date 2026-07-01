@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Robot-Filled Maze Shooter</title>
+<style>
+    body {
+        background: #000;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+    }
+    canvas {
+        background: #111;
+        image-rendering: pixelated;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    }
+</style>
+</head>
+<body>
+<canvas id="game" width="480" height="640"></canvas>
+<script>
+/**
+ * Robot-Filled Maze Shooter
+ * A single-file HTML5 implementation.
+ */
+
+// --- CONSTANTS ---
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const TILE_SIZE = 32;
+const COLS = 15;
+const ROWS = 19; // 19 * 32 = 608 (leaves room for HUD)
+const WIDTH = COLS * TILE_SIZE;
+const HEIGHT = ROWS * TILE_SIZE;
+const FPS = 60;
+const FRAME_TIME = 1000 / FPS;
+
+// Palette
+const C_WALL = '#4444ff';
+const C_WALL_DARK = '#2222aa';
+const C_FLOOR = '#000000';
+const C_FLOOR_GRID = '#111111';
+const C_PLAYER = '#00ff00';
+const C_ENEMY = '#ff0000';
+const C_BULLET = '#ffff00';
+const C_EXIT = '#00ffff';
+const C_TEXT = '#ffffff';
+
+// Game State
+let gameState = 'start'; // start, play, gameover, win
+let score = 0;
+let lives = 3;
+let level = 1;
+let frameCount = 0;
+let lastTime = 0;
+let keys = new Set();
+
+// Audio Context
+let audioCtx;
+
+// Entities
+let player = { x: 1, y: 1, dir: 0, cooldown: 0, speed: 0 };
+let bullets = [];
+let enemies = [];
+let particles = [];
+let map = [];
+let exitPos = { x: 14, y: 18 };
+
+// --- INPUT ---
+window.addEventListener('keydown', e => {
+    keys.add(e.code);
+    if (gameState === 'start' && e.code === 'Space') startGame();
+    if (gameState === 'gameover' && e.code === 'KeyR') resetGame();
+    if (gameState === 'win' && e.code === 'KeyR') nextLevel();
+});
+window.addEventListener('keyup', e => keys.delete(e.code));
+
+// --- AUDIO ---
+function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playSound(type) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    const now = audioCtx.currentTime;
+    if (type === 'shoot') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+    } else if (type === 'hit') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now);
+        osc.stop(now + 0.2);
+    } else if (type === 'die') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100, now);
+        osc.frequency.linearRampToValueAtTime(50, now + 0.5);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.5);
+        osc.start(now);
+        osc.stop(now + 0.5);
+    }
+}
+
+// --- MAP GENERATION ---
+function generateMap() {
+    map = [];
+    for (let y = 0; y < ROWS; y++) {
+        map[y] = [];
+        for (let x = 0; x < COLS; x++) {
+            if (y === 0 || y === ROWS - 1 || x === 0 || x === COLS - 1) {
+                map[y][x] = 1; // Wall
+            } else {
+                // Random walls, but keep center clear for spawn
+                let isSafe = (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+                map[y][x] = (Math.random() < 0.2 && !isSafe) ? 1 : 0;
+            }
+        }
+    }
+    // Ensure path to exit
+    map[ROWS-2][COLS-2] = 0;
+    map[ROWS-2][COLS-3] = 0;
+    map[ROWS-3][COLS-2] = 0;
+    exitPos = { x: COLS - 2, y: ROWS - 2 };
+}
+
+// --- GAME LOGIC ---
+function startGame() {
+    initAudio();
+    gameState = 'play';
+    score = 0;
+    lives = 3;
+    level = 1;
+    resetLevel();
+}
+
+function resetLevel() {
+    generateMap();
+    player = { x: 1.5 * TILE_SIZE, y: 1.5 * TILE_SIZE, dir: 0, cooldown: 0, speed: 3 };
+    bullets = [];
+    enemies = [];
+    particles = [];
+    // Spawn enemies
+    for (let i = 0; i < 3 + level; i++) spawnEnemy();
+}
+
+function resetGame() {
+    gameState = 'start';
+}
+
+function nextLevel() {
+    level++;
+    resetLevel();
+}
+
+function spawnEnemy() {
+    let x, y;
+    do {
+        x = Math.floor(Math.random() * (COLS - 2)) + 1;
+        y = Math.floor(Math.random() * (ROWS - 2)) + 1;
+    } while (map[y][x] === 1 || (x < 5 && y < 5));
+    enemies.push({
+        x: x * TILE_SIZE + TILE_SIZE/2,
+        y: y * TILE_SIZE + TILE_SIZE/2,
+        dir: Math.floor(Math.random() * 4),
+        speed: 1.5 + Math.random(),
+        cooldown: 0
+    });
+}
+
+function createParticle(x, y, color) {
+    for (let i = 0; i < 5; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4,
+            life: 30,
+            color: color
+        });
+    }
+}
+
+function update() {
+    if (gameState !== 'play') return;
+
+    // Player Movement
+    let dx = 0, dy = 0;
+    if (keys.has('ArrowUp') || keys.has('KeyW')) dy = -player.speed;
+    if (keys.has('ArrowDown') || keys.has('KeyS')) dy = player.speed;
+    if (keys.has('ArrowLeft') || keys.has('KeyA')) dx = -player.speed;
+    if (keys.has('ArrowRight') || keys.has('KeyD')) dx = player.speed;
+
+    // Normalize diagonal
+    if (dx !== 0 && dy !== 0) {
+        dx *= 0.707;
+        dy *= 0.707;
+    }
+
+    // Collision Check (Wall)
+    let nextX = player.x + dx;
+    let nextY = player.y + dy;
+    
+    // Simple circle collision with grid
+    let r = 8; // radius
+    let canMoveX = true;
+    let canMoveY = true;
+
+    // Check X
+    if (dx !== 0) {
+        let left = Math.floor((nextX - r) / TILE_SIZE);
+        let right = Math.floor((nextX + r - 1) / TILE_SIZE);
+        let top = Math.floor((player.y - r) / TILE_SIZE);
+        let bottom = Math.floor((player.y + r - 1) / TILE_SIZE);
+        
+        if (map[top][left] === 1 || map[top][right] === 1 || 
+            map[bottom][left] === 1 || map[bottom][right] === 1) {
+            canMoveX = false;
+        }
+    }
+
+    // Check Y
+    if (dy !== 0) {
+        let left = Math.floor((player.x - r) / TILE_SIZE);
+        let right = Math.floor((player.x + r - 1) / TILE_SIZE);
+        let top = Math.floor((nextY - r) / TILE_SIZE);
+        let bottom = Math.floor((nextY + r - 1) / TILE_SIZE);
+
+        if (map[top][left] === 1 || map[top][right] === 1 || 
+            map[bottom][left] === 1 || map[bottom][right] === 1) {
+            canMoveY = false;
+        }
+    }
+
+    if (canMoveX) player.x += dx;
+    if (canMoveY) player.y += dy;
+
+    // Shooting
+    if (player.cooldown > 0) player.cooldown--;
+    if (keys.has('Space') && player.cooldown === 0) {
+        let angle = 0;
+        if (keys.has('ArrowUp') || keys.has('KeyW')) angle = -Math.PI/2;
+        else if (keys.has('ArrowDown') || keys.has('KeyS')) angle = Math.PI/2;
+        else if (keys.has('ArrowLeft') || keys.has('KeyA')) angle = Math.PI;
+        else if (keys.has('ArrowRight') || keys.has('KeyD')) angle = 0;
+        
+        bullets.push({
+            x: player.x, y: player.y,
+            vx: Math.cos(angle) * 6,
+            vy: Math.sin(angle) * 6,
+            life: 60
+        });
+        player.cooldown = 15;
+        playSound('shoot');
+    }
+
+    // Update Bullets
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        let b = bullets[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        b.life--;
+
+        // Wall collision
+        let tx = Math.floor(b.x / TILE_SIZE);
+        let ty = Math.floor(b.y / TILE_SIZE);
+        if (tx < 0 || tx >= COLS || ty < 0 || ty >= ROWS || map[ty][tx] === 1) {
+            createParticle(b.x, b.y, C_BULLET);
+            bullets.splice(i, 1);
+            continue;
+        }
+
+        // Enemy collision
+        let hit = false;
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            let e = enemies[j];
+            let dist = Math.hypot(b.x - e.x, b.y - e.y);
+            if (dist < 12) {
+                createParticle(e.x, e.y, C_ENEMY);
+                enemies.splice(j, 1);
+                bullets.splice(i, 1);
+                score += 100;
+                playSound('hit');
+                hit = true;
+                break;
+            }
+        }
+        if (hit) continue;
+
+        if (b.life <= 0) bullets.splice(i, 1);
+    }
+
+    // Update Enemies
+    enemies.forEach(e => {
+        e.cooldown--;
+        // Simple AI: Move towards player
+        let angle = Math.atan2(player.y - e.y, player.x - e.x);
+        let moveX = Math.cos(angle) * e.speed;
+        let moveY = Math.sin(angle) * e.speed;
+        
+        // Wall check for enemy
+        let nextEX = e.x + moveX;
+        let nextEY = e.y + moveY;
+        let tx = Math.floor(nextEX / TILE_SIZE);
+        let ty = Math.floor(nextEY / TILE_SIZE);
+        
+        if (map[ty] && map[ty][tx] !== 1) {
+            e.x = nextEX;
+            e.y = nextEY;
+        } else {
+            // Bounce/Change direction
+            e.dir = Math.floor(Math.random() * 4);
+        }
+
+        // Enemy shoots
+        if (e.cooldown === 0 && Math.random() < 0.02) {
+            let angle = Math.atan2(player.y - e.y, player.x - e.x);
+            bullets.push({
+                x: e.x, y: e.y,
+                vx: Math.cos(angle) * 4,
+                vy: Math.sin(angle) * 4,
+                life: 60,
+                enemy: true
+            });
+        }
+
+        // Collision with player
+        if (Math.hypot(player.x - e.x, player.y - e.y) < 15) {
+            lives--;
+            playSound('die');
+            createParticle(player.x, player.y, C_PLAYER);
+            if (lives <= 0) {
+                gameState = 'gameover';
+            } else {
+                // Respawn player
+                player.x = 1.5 * TILE_SIZE;
+                player.y = 1.5 * TILE_SIZE;
+                enemies.length = 0;
+                bullets.length = 0;
+                spawnEnemy();
+            }
+        }
+    });
+
+    // Update Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    // Win Condition
+    if (Math.hypot(player.x - (exitPos.x * TILE_SIZE + TILE_SIZE/2), 
+                  player.y - (exitPos.y * TILE_SIZE + TILE_SIZE/2)) < 20) {
+        gameState = 'win';
+    }
+}
+
+// --- DRAWING ---
+function draw() {
+    // Clear
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (gameState === 'start') {
+        drawStartScreen();
+        return;
+    }
+
+    // Draw Map
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            if (map[y][x] === 1) {
+                ctx.fillStyle = C_WALL;
+                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                ctx.fillStyle = C_WALL_DARK;
+                ctx.fillRect(x * TILE_SIZE + 2, y * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+            } else {
+                ctx.fillStyle = C_FLOOR_GRID;
+                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
+        }
+    }
+
+    // Draw Exit
+    ctx.fillStyle = C_EXIT;
+    ctx.fillRect(exitPos.x * TILE_SIZE + 4, exitPos.y * TILE_SIZE + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px monospace';
+    ctx.fillText("EXIT", exitPos.x * TILE_SIZE + 6, exitPos.y * TILE_SIZE + 20);
+
+    // Draw Player
+    ctx.fillStyle = C_PLAYER;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, 8, 0, Math.PI * 2);
+    ctx.fill();
+    // Gun
+    ctx.strokeStyle = C_PLAYER;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(player.x, player.y);
+    let angle = 0;
+    if (keys.has('ArrowUp') || keys.has('KeyW')) angle = -Math.PI/2;
+    else if (keys.has('ArrowDown') || keys.has('KeyS')) angle = Math.PI/2;
+    else if (keys.has('ArrowLeft') || keys.has('KeyA')) angle = Math.PI;
+    else if (keys.has('ArrowRight') || keys.has('KeyD')) angle = 0;
+    ctx.lineTo(player.x + Math.cos(angle) * 12, player.y + Math.sin(angle) * 12);
+    ctx.stroke();
+
+    // Draw Enemies
+    enemies.forEach(e => {
+        ctx.fillStyle = C_ENEMY;
+        ctx.fillRect(e.x - 8, e.y - 8, 16, 16);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(e.x - 4, e.y - 4, 3, 3);
+        ctx.fillRect(e.x + 1, e.y - 4, 3, 3);
+    });
+
+    // Draw Bullets
+    bullets.forEach(b => {
+        ctx.fillStyle = b.enemy ? '#ff00ff' : C_BULLET;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    // Draw Particles
+    particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 3, 3);
+    });
+
+    // HUD
+    drawHUD();
+
+    // Overlays
+    if (gameState === 'gameover') drawGameOver();
+    if (gameState === 'win') drawWin();
+}
+
+function drawHUD() {
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px monospace';
+    ctx.fillText(`SCORE: ${score}`, 10, 20);
+    ctx.fillText(`LIVES: ${lives}`, 200, 20);
+    ctx.fillText(`LEVEL: ${level}`, 350, 20);
+}
+
+function drawStartScreen() {
+    ctx.fillStyle = '#fff';
+    ctx.font = '30px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText("ROBOT-FILLED", canvas.width/2, 200);
+    ctx.fillText("MAZE SHOOTER", canvas.width/2, 250);
+    
+    ctx.font = '16px monospace';
+    ctx.fillText("PRESS SPACE TO START", canvas.width/2, 350);
+    
+    ctx.font = '12px monospace';
+    ctx.fillStyle = '#aaa';
+    ctx.fillText("ARROWS/WASD: Move", canvas.width/2, 450);
+    ctx.fillText("SPACE: Shoot", canvas.width/2, 470);
+    ctx.fillText("Goal: Reach the EXIT", canvas.width/2, 490);
+    
+    ctx.fillStyle = '#0f0';
+    ctx.fillText("Robot-Filled Maze Shooter", canvas.width/2, 550);
+    ctx.fillText("Original-Genre Homage", canvas.width/2, 570);
+    ctx.textAlign = 'left';
+}
+
+function drawGameOver() {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    ctx.fillStyle = '#f00';
+    ctx.font = '40px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText("GAME OVER", WIDTH/2, HEIGHT/2);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px monospace';
+    ctx.fillText("Press R to Restart", WIDTH/2, HEIGHT/2 + 50);
+    ctx.textAlign = 'left';
+}
+
+function drawWin() {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    ctx.fillStyle = '#0ff';
+    ctx.font = '40px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText("LEVEL CLEAR!", WIDTH/2, HEIGHT/2);
+    ctx.fillStyle = '#fff';
+    ctx.font = '20px monospace';
+    ctx.fillText("Press R for Next Level", WIDTH/2, HEIGHT/2 + 50);
+    ctx.textAlign = 'left';
+}
+
+// --- LOOP ---
+function loop(timestamp) {
+    requestAnimationFrame(loop);
+    let dt = timestamp - lastTime;
+    if (dt > FRAME_TIME) {
+        lastTime = timestamp;
+        update();
+        draw();
+    }
+}
+
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>
