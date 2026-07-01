@@ -1,0 +1,6 @@
+# Ornith teamwork game-quality — Claude source-review /50 (playability, not just jsdom)
+# agentic-arcade teamwork harness (team 6 / merge-top 2 / 15-min), 2026-06-30 build.
+game,score_50,verdict
+Frogger,38,winnable (goals reachable, river crossable)
+Maze,39,playable/winnable (exit decorative, kill-all advances)
+# quality is stochastic per build: the 2026-06-29 build of this model scored frogger 33 / maze 34.

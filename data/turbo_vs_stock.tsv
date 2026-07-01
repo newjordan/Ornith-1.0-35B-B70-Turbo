@@ -1,0 +1,16 @@
+# Ornith-1.0-35B — Turbo vs Stock, Intel Arc Pro B70, Q5_K_M weights (identical), 2026-06-30/07-01
+# Stock  = llama.cpp-sycl-moe-clean @885e3e325, DNN on,  -b 2048 -ub 512, f16 KV, upstream defaults
+# Turbo  = llama.cpp-sycl-moe-ready (decode-fusion), GGML_SYCL_DISABLE_DNN=1, -b 8192 -ub 4096
+# blank turbo cells = point not measured (turbo swept at 1/8/16/32)
+
+## fleet — aggregate decode t/s (live server, tool class, -c 131072)
+agents	stock	turbo
+1	62.54	60.87
+2	70.84
+4	99.34
+8	118.30	140.58
+16	137.27	161.26
+24	173.97
+32	183.17	221.73
+structured_x32	134.48	165.90
+novel_x32	102.98	133.55

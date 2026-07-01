@@ -1,0 +1,44 @@
+<svg width="860" height="460" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="full" viewBox="0 0 860 460">
+<rect width="860" height="460" x="0" y="0" fill="#0d1117"></rect>
+<path d="M79.4 382.5L826 382.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr4-cls-25"></path>
+<path d="M79.4 325.5L826 325.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr4-cls-25"></path>
+<path d="M79.4 267.5L826 267.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr4-cls-25"></path>
+<path d="M79.4 210.5L826 210.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr4-cls-25"></path>
+<path d="M79.4 153.5L826 153.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr4-cls-25"></path>
+<path d="M79.4 96.5L826 96.5" fill="none" pointer-events="visible" stroke="#21262d" stroke-dasharray="4,2" class="zr4-cls-25"></path>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="-6" transform="translate(79.44 82)" fill="#7d8590">score / 50</text>
+<path d="M79.4 382.5L826 382.5" fill="none" pointer-events="visible" stroke="#30363d" stroke-linecap="round" class="zr4-cls-25"></path>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(71.44 382)" fill="#8b949e">0</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(71.44 324.8)" fill="#8b949e">10</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(71.44 267.6)" fill="#8b949e">20</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(71.44 210.4)" fill="#8b949e">30</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(71.44 153.2)" fill="#8b949e">40</text>
+<text dominant-baseline="central" text-anchor="end" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" transform="translate(71.44 96)" fill="#8b949e">50</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(266.08 390)" fill="#8b949e">Frogger</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" y="6" transform="translate(639.36 390)" fill="#8b949e">Maze</text>
+<path d="M238.1 164.6L294.1 164.6A4 4 0 0 1 298.1 168.6L298.1 382L234.1 382L234.1 168.6A4 4 0 0 1 238.1 164.6Z" fill="#3fb950" ecmeta_series_index="0" ecmeta_data_index="0" ecmeta_ssr_type="chart" class="zr4-cls-26"></path>
+<path d="M611.4 158.9L667.4 158.9A4 4 0 0 1 671.4 162.9L671.4 382L607.4 382L607.4 162.9A4 4 0 0 1 611.4 158.9Z" fill="#58a6ff" ecmeta_series_index="0" ecmeta_data_index="1" ecmeta_ssr_type="chart" class="zr4-cls-27"></path>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:13px;font-family:-apple-system;" y="-6.5" transform="translate(266.08 159.64)" fill="#e6edf3">38</text>
+<text dominant-baseline="central" text-anchor="middle" style="font-size:13px;font-family:-apple-system;" y="-6.5" transform="translate(639.36 153.92)" fill="#e6edf3">39</text>
+<path d="M-5 -5l10 0l0 10l-10 0Z" transform="translate(829 27)" fill="rgb(0,0,0)" fill-opacity="0" stroke="#b7b9be" stroke-width="0" class="zr4-cls-25"></path>
+<path d="M-5 -5l599.8 0l0 54l-599.8 0Z" transform="translate(31 23)" fill="rgb(0,0,0)" fill-opacity="0" stroke="#3c3c41" stroke-width="0" class="zr4-cls-25"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:18px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;font-weight:600;" xml:space="preserve" y="9" transform="translate(31 23)" fill="#e6edf3">Ornith · teamwork game-quality (source-review /50)</text>
+<path d="M0 28l589.8 0l0 16l-589.8 0Z" transform="translate(31 23)" fill="none" pointer-events="visible" class="zr4-cls-25"></path>
+<text dominant-baseline="central" text-anchor="start" style="font-size:12px;font-family:-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;" xml:space="preserve" y="36" transform="translate(31 23)" fill="#7d8590">agentic-arcade whole-game workers + merge · both builds playable/winnable · quality is stochastic per build</text>
+<style ><![CDATA[
+.zr4-cls-25:hover {
+pointer-events:none;
+}
+.zr4-cls-26:hover {
+cursor:pointer;
+fill:rgba(69,203,88,1);
+}
+.zr4-cls-27:hover {
+cursor:pointer;
+fill:rgba(96,182,255,1);
+}
+
+]]>
+
+</style>
+</svg>

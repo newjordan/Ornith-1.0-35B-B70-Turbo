@@ -1,0 +1,10 @@
+benchmark,score_pct,n_tasks
+GSM8K,97.0,200
+HellaSwag,82.1,1000
+Winogrande,71.6,1000
+ARC-Challenge,49.2,299
+MMLU,41.1,2000
+TruthfulQA-MC1,35.7,817
+Wikitext2-PPL,6.36,100chunks
+# note: PPL is perplexity (lower=better), not a %. Source: agentic-arcade base lm-eval set
+# (reference-model slot); re-run under the Ornith alias for the final card.
