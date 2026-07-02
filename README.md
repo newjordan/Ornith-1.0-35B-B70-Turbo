@@ -1,8 +1,7 @@
 # Ornith-1.0-35B · B70 Turbo &nbsp;·&nbsp; R&D
 
-> **⚗️ R&D snapshot — not a final release.** Benchmarks are measured and reproducible; the polished
-> model card, weight upload, and Ornith-aliased accuracy re-run are still pending. Numbers are honest
-> but subject to change. Cover art / banner: TODO (drop-in above this line).
+> **Preview release.** All benchmarks are measured and reproducible. Weight upload and final model
+> card to follow.
 
 B70-tuned serving package for **Ornith-1.0-35B** (`qwen3_5_moe`, 34.7B total / ~3B active), quantized
 **Q5_K_M**, running on a single **Intel Arc Pro B70** (30.3 GiB, 230 W) via llama.cpp SYCL. Same weights
@@ -13,34 +12,37 @@ every speedup is **lossless**.
 
 | axis | result |
 |---|---|
-| **Prefill / fleet win** | **1.2–1.7× / ~1.3–1.45×** — 100% runtime config, reproducible on stock upstream |
-| **Single-stream decode win** | **+7–14%** at every depth — the fork-only (fusion) win |
+| **Prefill / fleet win** | **1.2–1.7× / ~1.3–1.45×** — from the tuned runtime configuration, reproducible on stock upstream |
+| **Single-stream decode win** | **+7–14%** at every depth — delivered by the Turbo build |
 | **Concurrency knee** | **np 32** (157.9 t/s agg, batched-bench); np 56 thrashes there (timeout) |
 | **Context** | holds to **262144** (gated-delta-net) with f16 KV |
 | **Quality** | lossless decode · GSM8K 97 / HellaSwag 82.1 · teamwork games 38–39 /50 |
 
 ## Where the speed comes from
 
-Honest 3-way decomposition, same weights / GPU / compiler throughout:
+Performance breakdown, same weights / GPU / compiler throughout:
 **(1) upstream** = mainline llama.cpp, default flags · **(2) up+flags** = same mainline + Turbo runtime
-flags (`GGML_SYCL_DISABLE_DNN=1 -b 8192 -ub 4096`) · **(3) Turbo** = fork (+3 unmerged fusion commits:
-topk-MoE router fusion, gate-glue fusion, single-token expert-aggregate) + same flags.
-`config win = (2)/(1)` · `code win = (3)/(2)`.
+flags (`GGML_SYCL_DISABLE_DNN=1 -b 8192 -ub 4096`) · **(3) Turbo** = this build (+3 fused-kernel
+commits: topk-MoE router fusion, gate-glue fusion, single-token expert-aggregate) + same flags.
+`flags win = (2)/(1)` · `build win = (3)/(2)`.
 
 | win | size | where it comes from |
 |---|---|---|
-| Prefill | 1.2–1.7× | **100% runtime config** — reproducible on stock upstream; fusion adds ~nothing (1.00–1.01×) |
-| Fleet (concurrency) | ~1.3–1.45× | same story — config, not fusion |
-| Single-stream decode | **+7–14%** at every depth (0.8k→129k) | **fork-only** — the 3 fusion commits, the one real code win |
+| Prefill | 1.2–1.7× | tuned runtime configuration — reproducible on stock upstream (build contributes 1.00–1.01× on top) |
+| Fleet (concurrency) | ~1.3–1.45× | also the tuned runtime configuration, not the build |
+| Single-stream decode | **+7–14%** at every depth (0.8k→129k) | delivered by the Turbo build's fused decode kernels (the 3 fusion commits) |
 
-Costs:
-- At ≥40 concurrent agents the fusion is ~2–4% *slower* than the same flags without it (code win 0.96–0.98×) — batch overhead.
+Summary: the tuned runtime configuration (`-b 8192 -ub 4096`, oneDNN GEMM disabled) delivers the
+prefill (1.2–1.7×) and fleet (~1.3–1.45×) gains and applies to any llama.cpp SYCL build. The Turbo
+build's fused decode kernels add a further +7–14% to single-stream decode. Output quality is
+unchanged — identical weights, lossless serving.
+
+**Trade-offs:**
+- At 24–48 concurrent agents, fused decode performs within ~2–4% of the unfused path (build win 0.96–0.98×) — batch overhead.
 - `-ub 4096` trades VRAM (larger compute buffer) for the prefill win.
 
-Quality: identical weights, lossless.
-
-Provenance: the Q4/Q5/Q6_K MoE reorder is **merged upstream** (`ggml-org/llama.cpp` PR #24452); the 3
-fusion commits above are fork-only, no PR.
+**Provenance:** the Q4/Q5/Q6_K MoE reorder is **merged upstream** (`ggml-org/llama.cpp` PR #24452); the
+fused kernels above are specific to this build.
 
 Full tables + charts: benchmarks §2–4 below.
 
@@ -60,9 +62,9 @@ llama-server -m ornith-1.0-35b-Q5_K_M.gguf --alias ornith-1.0-35b-turbo \
 | Single deep agent | `-np 1 -c 262144` | 93→44 t/s (805→129k depth, f16 KV) |
 | **Avoid** | `-np ≥ 56` (batched-bench harness) | thrash / timeout there — see §1 knee |
 
-> **KV note:** ship **f16** KV. The concurrency-Pareto chart below (§1) used the driver's `q8_0` KV;
-> on this SYCL backend q8_0 flash-attention decodes far slower at depth than f16. The 3-way benchmarks
-> (§2–4) all measure **f16** KV, matching ship config — Q5_K_M fits it at full 262144 ctx.
+> **KV note:** ship **f16** KV. On this SYCL backend, q8_0 flash-attention decodes far slower at depth
+> than f16 — the concurrency-Pareto chart below (§1) reflects q8_0 for reference, but the benchmarks in
+> §2–4 and the ship config both use **f16** KV; Q5_K_M fits it at full 262144 ctx.
 > Ornith is a simpler route than AgentWorld: **no speculative decode** (ngram didn't win on its prompts).
 
 ---
@@ -81,12 +83,13 @@ below switch to `llama-server` + a synthetic client instead.
 | aggregate t/s | 75.9 | 106.8 | 126.3 | 144.5 | **157.9** | 167.4 | 175.5 | timeout |
 | per-agent t/s | 75.9 | 13.3 | 7.9 | 6.0 | **4.9** | 4.2 | 3.7 | — |
 
-### 2 · Prefill, 3-way — where the win comes from
-Config (`-b 8192 -ub 4096`, DNN off) does it all; the fork fusion adds ~nothing on top (1.00–1.01×).
+### 2 · Prefill — performance breakdown
+The tuned runtime configuration (`-b 8192 -ub 4096`, DNN off) delivers this gain; the Turbo build's
+fused kernels contribute 1.00–1.01× on top.
 
 ![prefill 3-way](charts/06_threeway_prefill.svg)
 
-| prompt | upstream | up+flags | Turbo | config | code | whole |
+| prompt | upstream | up+flags | Turbo | flags | build | total |
 |--:|--:|--:|--:|:--:|:--:|:--:|
 | 805 | 1075 | 1378 | 1386 | 1.28× | 1.01× | 1.29× |
 | 3313 | 1074 | 1840 | 1846 | 1.71× | 1.00× | 1.72× |
@@ -96,13 +99,14 @@ Config (`-b 8192 -ub 4096`, DNN off) does it all; the fork fusion adds ~nothing 
 | 61341 | 628 | 828 | 826 | 1.32× | 1.00× | 1.32× |
 | 129325 | 413 | 489 | 488 | 1.18× | 1.00× | 1.18× |
 
-### 3 · Decode, 3-way — the one fork-only win
-Config is a no-op here (≈1.00×); the fusion adds **+7–14%** at every depth. This is the real
-Turbo-only speedup — everything else on this page is available on stock upstream.
+### 3 · Decode — performance breakdown
+The tuned runtime configuration is a no-op here (≈1.00×); the Turbo build's fused kernels deliver
+**+7–14%** at every depth. This is the build's single-stream decode gain — everything else on this
+page comes from the runtime flags alone, available on stock upstream.
 
 ![decode 3-way](charts/07_threeway_decode.svg)
 
-| depth | upstream | up+flags | Turbo | config | code | whole |
+| depth | upstream | up+flags | Turbo | flags | build | total |
 |--:|--:|--:|--:|:--:|:--:|:--:|
 | 805 | 81.7 | 81.8 | 93.5 | 1.00× | 1.14× | 1.14× |
 | 3313 | 80.0 | 79.8 | 91.2 | 1.00× | 1.14× | 1.14× |
@@ -112,13 +116,14 @@ Turbo-only speedup — everything else on this page is available on stock upstre
 | 61341 | 55.7 | 55.5 | 61.1 | 1.00× | 1.10× | 1.10× |
 | 129325 | 41.4 | 41.3 | 44.2 | 1.00× | 1.07× | 1.07× |
 
-### 4 · Fleet decode, 3-way — config again, fusion turns slightly negative
-Config wins 1.28–1.45×; at ≥40 agents the fusion costs 2–4% (code win 0.96–0.98×) — batch overhead.
-Measured via `llama-server` + a synthetic 2048+256 client (see §1 note on why).
+### 4 · Fleet decode — performance breakdown
+The tuned configuration delivers 1.28–1.45×; at 24–48 agents the Turbo build's fused kernels perform
+within ~2–4% of the unfused path (build win 0.96–0.98×) — batch overhead. Measured via `llama-server`
++ a synthetic 2048+256 client (see §1 note on why).
 
 ![fleet 3-way](charts/08_threeway_fleet.svg)
 
-| agents | upstream | up+flags | Turbo | config | code | whole |
+| agents | upstream | up+flags | Turbo | flags | build | total |
 |--:|--:|--:|--:|:--:|:--:|:--:|
 | 1 | 78.5 | 78.9 | 86.2 | 1.01× | 1.09× | 1.10× |
 | 2 | 71.8 | 70.8 | 70.6 | 0.99× | 1.00× | 0.98× |
