@@ -1,5 +1,7 @@
 # Ornith-1.0-35B · B70 Turbo &nbsp;·&nbsp; R&D
 
+![Ornith-1.0-35B B70 Turbo artwork](https://i.imgur.com/4Inefkb.jpeg)
+
 > **Published release.** Weights and the final model card are available on Hugging Face:
 > https://huggingface.co/Frosty40/Ornith-1.0-35B-B70-Turbo. Benchmarks remain reproducible from this repo.
 
