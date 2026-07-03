@@ -1,7 +1,7 @@
 # Ornith-1.0-35B · B70 Turbo &nbsp;·&nbsp; R&D
 
-> **Preview release.** All benchmarks are measured and reproducible. Weight upload and final model
-> card to follow.
+> **Published release.** Weights and the final model card are available on Hugging Face:
+> https://huggingface.co/Frosty40/Ornith-1.0-35B-B70-Turbo. Benchmarks remain reproducible from this repo.
 
 B70-tuned serving package for **Ornith-1.0-35B** (`qwen3_5_moe`, 34.7B total / ~3B active), quantized
 **Q5_K_M**, running on a single **Intel Arc Pro B70** (30.3 GiB, 230 W) via llama.cpp SYCL. Same weights
@@ -173,7 +173,7 @@ Raw data in [`data/`](data/); raw bench files behind the 3-way tables (llama-ben
 (moe-ready build, `bench/run_live_evals.sh`, `bench/concurrency_pareto_guarded.sh`).
 
 ## Provenance / caveats
-- Weights: `qwen3_5_moe` Ornith-1.0-35B, Q5_K_M (imatrix). Not in this repo (R&D).
+- Weights: `qwen3_5_moe` Ornith-1.0-35B, Q5_K_M (imatrix), published at https://huggingface.co/Frosty40/Ornith-1.0-35B-B70-Turbo.
 - Charts rendered dark to sit in GitHub's palette; source SVGs are static (no scripts).
 - Throughput is architecture-determined — the `qwen3_5_moe` family (AgentWorld/NEX2/SIQ) traces the same
   curve; these models differ only in quality, not raw t/s.
