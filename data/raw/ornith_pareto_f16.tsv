@@ -1,3 +1,7 @@
+# Column semantics differ from ornith_pareto_stock/upflags: agg_decode_tps here is the end-to-end
+# rate (gen tokens / batch_wall_s, prefill included) — the column those files call e2e_gen_tps.
+# The decode-only aggregate behind the fleet 3-way table (threeway_fleet.tsv, README §4) is
+# per_agent_tps × agents.
 agents	prompt_n	agg_decode_tps	per_agent_tps	prefill_tps	batch_wall_s	status
 1	2048	54.49	86.2	1196.2	4.7	OK
 2	2048	52.49	35.3	1168.87	9.75	OK
