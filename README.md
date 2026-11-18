@@ -171,8 +171,10 @@ ECHARTS_ESM=/path/to/newjordan-echarts/dist/echarts.esm.min.mjs node charts/gen_
 ```
 
 Raw data in [`data/`](data/); raw bench files behind the 3-way tables (llama-bench `.md` + pareto
-`.tsv`, all 3 configs) in [`data/raw/`](data/raw/). Serving/bench harnesses live in `qworld_turbo/`
-(moe-ready build, `bench/run_live_evals.sh`, `bench/concurrency_pareto_guarded.sh`).
+`.tsv`, all 3 configs) in [`data/raw/`](data/raw/); chart/theme notes in
+[`charts/README.md`](charts/README.md). Serving/bench harnesses live in a separate `qworld_turbo/`
+workspace, not in this repo (moe-ready build, `bench/run_live_evals.sh`,
+`bench/concurrency_pareto_guarded.sh`).
 
 ## Provenance / caveats
 - Weights: `qwen3_5_moe` Ornith-1.0-35B, Q5_K_M (imatrix), published at https://huggingface.co/Frosty40/Ornith-1.0-35B-B70-Turbo.
